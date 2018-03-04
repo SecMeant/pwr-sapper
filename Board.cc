@@ -86,4 +86,29 @@ bool Board::setField(int x, int y, bool mState,bool cState, bool fState)
 	return 1;
 }
 
+bool Board::hasMine(int x, int y) const
+{
+	Field *f = getFromBoard(x,y);
+
+	if(f == nullptr)
+		return 0;
+	return f->isMined();
+}
+
+int Board::countMines(int x, int y) const
+{
+	int ret = 0;
+	ret += hasMine(x-1,y+1); // top left
+	ret += hasMine(x,y+1);   // top
+	ret += hasMine(x+1,y+1); // top right
+
+	ret += hasMine(x-1,y);   // left
+	ret += hasMine(x+1,y);   // right
+
+	ret += hasMine(x-1,y-1); // bottom left
+	ret += hasMine(x,y-1);   // bottom
+	ret += hasMine(x+1,y-1); // bottom right
+	return ret;
+}
+
 

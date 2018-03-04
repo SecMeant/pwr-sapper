@@ -37,6 +37,14 @@ public:
 	
 	// Changes field described by given XY coords to given values
 	bool setField(int x, int y, bool mState, bool cState, bool fState);
+
+	// Returns true if field described by XY coords
+	// contains bomb or not
+	bool hasMine(int x, int y) const;
+
+	// Returns number of mines around point
+	// descibed as given XY coords
+	int countMines(int x, int y) const;
 };
 
 #endif
