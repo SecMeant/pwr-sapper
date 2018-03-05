@@ -1,7 +1,19 @@
 #include "Board.h"
 
-Board::Board(int width, int height): boardWidth(width), boardHeight(height)
+Board::Board(int width, int height): boardWidth(width), boardHeight(height), gameState(0)
 {
+	if(width <= 0)
+	{
+		width = 1;
+		puts("Board's width cannot be 0 or less!\n");
+	}
+
+	if(height <= 0)
+	{
+		height = 1;
+		puts("Board's height cannot be 0 or less!\n");
+	}
+
 	this->board = new Field[width * height]();
 }
 
@@ -22,7 +34,6 @@ void Board::deployMines(int n, bool random)
 			int xcoord = rand() % this->boardWidth;
 			int ycoord = rand() % this->boardHeight;
 
-			printf("Random: %i %i\n", xcoord, ycoord);
 			f = this->getFromBoard(xcoord, ycoord);
 			f->setMineState(1);
 		}
@@ -59,13 +70,11 @@ Field * Board::getFromBoard(int x, int y) const
 {
 	if(x >= this->boardWidth || x < 0)
 	{
-		printf("Out of bound: %i %i.\n",x,y);
 		return nullptr;
 	}
 	
 	if(y >= this->boardHeight || y < 0)
 	{
-		printf("Out of bound: %i %i.\n",x,y);
 		return nullptr;
 	}
 
@@ -111,4 +120,62 @@ int Board::countMines(int x, int y) const
 	return ret;
 }
 
+void Board::display() const
+{
+	Field *f;
+	int minesCount;
+	for(int j = this->boardHeight-1; j >= 0; j--)
+	{
+		for(int i = 0; i < this->boardWidth; i++)
+		{
+			f = this->getFromBoard(i,j);
+			minesCount = this->countMines(i,j);
+			putchar('[');
+
+			if(f->isCovered())
+			{
+				if(f->isFlagged())
+					putchar('?');
+				else
+					putchar('.');
+			}
+			else // revealed
+			{
+				if(f->isMined())
+					putchar('X');
+				else if(minesCount == 0)
+					putchar(' ');
+				else
+					// Converts int to ascii digit
+					putchar(static_cast<char>(minesCount+0x30));
+			}
+
+			putchar(']');
+		}
+		putchar('\n');
+	}
+}
+
+bool Board::reveal(int x, int y)
+{
+	Field *f = getFromBoard(x, y);
+
+	if(f == nullptr)
+		return 0;
+
+	if(!f->isCovered())
+		return 0;
+
+	f->setCoverState(0);
+	
+	if(f->isMined())
+		this->gameState = 1; // GAMEOVER
+
+	return 1;
+}
+
+bool Board::isGameOver()
+{
+	return this->gameState;
+}
 

@@ -3,14 +3,16 @@
 
 int main(void)
 {
+	int x,y;
 	Board mainBoard(3,4);
-	mainBoard.setField(0,1,1,0,0);
-	mainBoard.setField(0,2,1,0,0);
-	mainBoard.setField(2,1,1,0,0);
-	mainBoard.setField(2,0,1,0,0);
-	mainBoard.setField(2,3,1,0,0);
+	mainBoard.deployMines(3,1);
 	mainBoard.debug_display();
-	printf("%i\n",mainBoard.countMines(1,1));
-
+	while(!mainBoard.isGameOver())
+	{
+		scanf(" %i %i",&x,&y);
+		mainBoard.reveal(x,y);
+		mainBoard.display();
+	}
+	puts("GAMEOVER!");
 	return 0;
 }

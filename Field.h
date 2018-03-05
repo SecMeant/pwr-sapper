@@ -16,7 +16,7 @@ private:
 	bool coverState;
 
 public:
-	Field(): mineState(0), flagState(0), coverState(0){}
+	Field(): mineState(0), flagState(0), coverState(1){}
 	Field(bool ms, bool fs, bool cs)
 		:mineState(ms), flagState(fs), coverState(cs){}
 	
