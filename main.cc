@@ -3,8 +3,8 @@
 
 int main(void)
 {
-	Board mainBoard(4,4);
-	mainBoard.initStartGame();
+	Board mainBoard(10,10);
+	mainBoard.initStartGame(GameType::user);
 
 	return 0;
 }

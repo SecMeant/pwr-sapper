@@ -3,11 +3,17 @@
 
 #include "Field.h"
 #include <stdlib.h>
+#include <stdint.h>
 #include <time.h>
 
 #include <windows.h>
 
+#include <thread>
+#include <random>
+
 #include <SFML/Graphics.hpp>
+
+enum GameType {user, random};
 
 class Board
 {
@@ -27,25 +33,36 @@ private:
 	// True = GAMEOVER
 	bool gameState;
 
+	std::thread *UIthread;
+
+	// Used for random play
+	std::default_random_engine randomGen;
+
 	// Starts game
 	void startGame();
 
 	// Starts game in console
 	void startGameConsole();
 
+	// Randomly seletcs button to reveal
+	void randomPlay();
+
 	/* SFML HELPER FUNCTIONS */
 	// Draws grid of game board
 	void drawBoard(sf::RenderWindow &wnd);
 
-	// Fills given VertexArray with horizontal lines of board grid
-	inline void drawHorizontalGrid(sf::VertexArray &larray); 
+	// Draws horizontal lines of board grid
+	void drawHorizontalGrid(sf::RenderWindow &wnd); 
 	
-	// Fills given VertexArray with vertical lines of board grid
-	inline void drawVerticalGrid(sf::VertexArray &larray);
+	// Draws vertical lines of board grid
+	void drawVerticalGrid(sf::RenderWindow &wnd);
+
+	// Draws buttons on grid according to its state
+	void drawBoardButtons(sf::RenderWindow &wnd);
 public:
 	// Holds size of game window
-	static constexpr int windowWidth = 800;
-	static constexpr int windowHeight = 600;
+	static constexpr int windowWidth = 1280;
+	static constexpr int windowHeight = 720;
 
 	// Offset of main board 
 	// from top left corner of game window
@@ -93,7 +110,7 @@ public:
 	bool reveal(int x, int y);
 
 	// Randomly deploys mines and starts game
-	void initStartGame();
+	void initStartGame(GameType gt);
 };
 
 #endif

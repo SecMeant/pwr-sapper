@@ -3,7 +3,8 @@
 inline void clearstdin()
 {fseek(stdin,0,SEEK_END);}
 
-Board::Board(int width, int height): gameState(0)
+Board::Board(int width, int height)
+	:gameState(0), UIthread(nullptr), randomGen(time(NULL))
 {
 	if(width <= 0)
 	{
@@ -185,24 +186,80 @@ bool Board::isGameOver()
 	return this->gameState;
 }
 
-void Board::initStartGame()
+void Board::initStartGame(GameType gt)
 {
-	this->deployMines(3,1);
+	this->deployMines(20,1);
+	this->debug_display();
+	if(gt == GameType::user)
+	{
+		this->UIthread = new std::thread(this->startGameConsole,this);
+		this->startGame();
+		return;
+	}
+
+	this->UIthread = new std::thread(this->randomPlay,this);
 	this->startGame();
 }
 
 void Board::drawBoard(sf::RenderWindow &wnd)
 {
-	sf::VertexArray linesarray(sf::Lines);
+	this->drawHorizontalGrid(wnd);
+	this->drawVerticalGrid(wnd);
+	this->drawBoardButtons(wnd);
 
-	this->drawHorizontalGrid(linesarray);
-	this->drawVerticalGrid(linesarray);
-
-	wnd.draw(linesarray);
 }
 
-void Board::drawHorizontalGrid(sf::VertexArray &larray)
+void Board::randomPlay()
 {
+	while(!this->isGameOver())
+	{
+		int x = this->randomGen() % this->boardWidth;
+		int y = this->randomGen() % this->boardHeight;
+
+		Sleep(1000);
+		
+		this->reveal(x,y);
+	}
+	puts("GAMEOVER");
+}
+
+void Board::drawBoardButtons(sf::RenderWindow &wnd)
+{
+	std::vector<sf::RectangleShape> gridButtons(this->boardWidth*this->boardHeight,
+			sf::RectangleShape(sf::Vector2f(this->cellWidth-2, this->cellHeight-2)));
+	
+	Field *field;
+
+	for(int i=0; i<this->boardHeight; i++)
+	{
+		for(int j=0; j<this->boardWidth; j++)
+		{
+			gridButtons[(i*this->boardWidth)+j].setPosition(
+					j*50+this->boardScreenYoffset+1,
+					i*50+this->boardScreenXoffset+1);
+			field = getFromBoard(j,i);
+			if(field->isCovered())
+			{
+				gridButtons[(i*this->boardWidth)+j].setFillColor(sf::Color::Green);
+				continue;
+			}
+			if(field->isMined())
+			{
+				gridButtons[(i*this->boardWidth)+j].setFillColor(sf::Color::Red);
+				continue;
+			}
+		}
+	}
+	
+
+	for(auto btn:gridButtons)
+		wnd.draw(btn);
+}
+
+void Board::drawHorizontalGrid(sf::RenderWindow &wnd)
+{
+	sf::VertexArray hLines(sf::Lines);
+	
 	register float xpoint;
 	register float ypoint;
 
@@ -210,15 +267,19 @@ void Board::drawHorizontalGrid(sf::VertexArray &larray)
 	{
 		xpoint = boardScreenXoffset;
 		ypoint = boardScreenYoffset+(x*this->cellHeight);
-		larray.append(sf::Vector2f(xpoint, ypoint)); // początek
+		hLines.append(sf::Vector2f(xpoint, ypoint)); // początek
 
 		xpoint = boardScreenXoffset+(this->boardWidth*this->cellWidth);
-		larray.append(sf::Vector2f(xpoint, ypoint)); // koniec
+		hLines.append(sf::Vector2f(xpoint, ypoint)); // koniec
 	};
+
+	wnd.draw(hLines);
 }
 
-void Board::drawVerticalGrid(sf::VertexArray &larray)
+void Board::drawVerticalGrid(sf::RenderWindow &wnd)
 {
+	sf::VertexArray vLines(sf::Lines);
+	
 	register float xpoint;
 	register float ypoint;
 
@@ -226,11 +287,13 @@ void Board::drawVerticalGrid(sf::VertexArray &larray)
 	{
 		xpoint = boardScreenXoffset+(x*this->cellWidth);
 		ypoint = boardScreenYoffset;
-		larray.append(sf::Vector2f(xpoint, ypoint)); // początek
+		vLines.append(sf::Vector2f(xpoint, ypoint)); // początek
 
 		ypoint = boardScreenYoffset+(this->boardHeight*this->cellHeight);
-		larray.append(sf::Vector2f(xpoint, ypoint)); // koniec
+		vLines.append(sf::Vector2f(xpoint, ypoint)); // koniec
 	};
+
+	wnd.draw(vLines);
 }
 
 void Board::startGame()
