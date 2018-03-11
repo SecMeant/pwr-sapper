@@ -263,14 +263,21 @@ void Board::drawHorizontalGrid(sf::RenderWindow &wnd)
 	register float xpoint;
 	register float ypoint;
 
+	sf::Color clr(255,255,255);
+	if(this->isGameOver())
+	{
+		clr.g = 0;
+		clr.b = 0;
+	}
+
 	for (int x=0; x<=this->boardHeight; x++)
 	{
 		xpoint = boardScreenXoffset;
 		ypoint = boardScreenYoffset+(x*this->cellHeight);
-		hLines.append(sf::Vector2f(xpoint, ypoint)); // początek
+		hLines.append(sf::Vertex(sf::Vector2f(xpoint, ypoint),clr)); // początek
 
 		xpoint = boardScreenXoffset+(this->boardWidth*this->cellWidth);
-		hLines.append(sf::Vector2f(xpoint, ypoint)); // koniec
+		hLines.append(sf::Vertex(sf::Vector2f(xpoint, ypoint),clr)); // koniec
 	};
 
 	wnd.draw(hLines);
@@ -283,14 +290,21 @@ void Board::drawVerticalGrid(sf::RenderWindow &wnd)
 	register float xpoint;
 	register float ypoint;
 
+	sf::Color clr(255,255,255);
+	if(this->isGameOver())
+	{
+		clr.g = 0;
+		clr.b = 0;
+	}
+
 	for (int x=0; x<=this->boardWidth; x++)
 	{
 		xpoint = boardScreenXoffset+(x*this->cellWidth);
 		ypoint = boardScreenYoffset;
-		vLines.append(sf::Vector2f(xpoint, ypoint)); // początek
+		vLines.append(sf::Vertex(sf::Vector2f(xpoint, ypoint),clr)); // początek
 
 		ypoint = boardScreenYoffset+(this->boardHeight*this->cellHeight);
-		vLines.append(sf::Vector2f(xpoint, ypoint)); // koniec
+		vLines.append(sf::Vertex(sf::Vector2f(xpoint, ypoint),clr)); // koniec
 	};
 
 	wnd.draw(vLines);

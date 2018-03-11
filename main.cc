@@ -4,7 +4,7 @@
 int main(void)
 {
 	Board mainBoard(10,10);
-	mainBoard.initStartGame(GameType::user);
+	mainBoard.initStartGame(GameType::random);
 
 	return 0;
 }
