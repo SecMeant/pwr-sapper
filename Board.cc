@@ -206,7 +206,6 @@ void Board::drawBoard(sf::RenderWindow &wnd)
 	this->drawHorizontalGrid(wnd);
 	this->drawVerticalGrid(wnd);
 	this->drawBoardButtons(wnd);
-
 }
 
 void Board::randomPlay()
