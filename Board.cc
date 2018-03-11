@@ -1,6 +1,9 @@
 #include "Board.h"
 
-Board::Board(int width, int height): boardWidth(width), boardHeight(height), gameState(0)
+inline void clearstdin()
+{fseek(stdin,0,SEEK_END);}
+
+Board::Board(int width, int height): gameState(0)
 {
 	if(width <= 0)
 	{
@@ -13,6 +16,9 @@ Board::Board(int width, int height): boardWidth(width), boardHeight(height), gam
 		height = 1;
 		puts("Board's height cannot be 0 or less!\n");
 	}
+
+	this->boardWidth = width;
+	this->boardHeight = height;
 
 	this->board = new Field[width * height]();
 }
@@ -179,3 +185,91 @@ bool Board::isGameOver()
 	return this->gameState;
 }
 
+void Board::initStartGame()
+{
+	this->deployMines(3,1);
+	this->startGame();
+}
+
+void Board::drawBoard(sf::RenderWindow &wnd)
+{
+	sf::VertexArray linesarray(sf::Lines);
+
+	this->drawHorizontalGrid(linesarray);
+	this->drawVerticalGrid(linesarray);
+
+	wnd.draw(linesarray);
+}
+
+void Board::drawHorizontalGrid(sf::VertexArray &larray)
+{
+	register float xpoint;
+	register float ypoint;
+
+	for (int x=0; x<=this->boardHeight; x++)
+	{
+		xpoint = boardScreenXoffset;
+		ypoint = boardScreenYoffset+(x*this->cellHeight);
+		larray.append(sf::Vector2f(xpoint, ypoint)); // początek
+
+		xpoint = boardScreenXoffset+(this->boardWidth*this->cellWidth);
+		larray.append(sf::Vector2f(xpoint, ypoint)); // koniec
+	};
+}
+
+void Board::drawVerticalGrid(sf::VertexArray &larray)
+{
+	register float xpoint;
+	register float ypoint;
+
+	for (int x=0; x<=this->boardWidth; x++)
+	{
+		xpoint = boardScreenXoffset+(x*this->cellWidth);
+		ypoint = boardScreenYoffset;
+		larray.append(sf::Vector2f(xpoint, ypoint)); // początek
+
+		ypoint = boardScreenYoffset+(this->boardHeight*this->cellHeight);
+		larray.append(sf::Vector2f(xpoint, ypoint)); // koniec
+	};
+}
+
+void Board::startGame()
+{
+	sf::RenderWindow 
+		window(sf::VideoMode(this->windowWidth,this->windowHeight), "SFML Sapper");
+
+	// Start the game loop
+	while (window.isOpen())
+	{
+		// Process events
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			// Close window : exit
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		// Clear screen
+		window.clear();
+
+		// Draws main grid of board
+		this->drawBoard(window);
+
+		// Update the window
+		window.display();
+	}
+}
+
+void Board::startGameConsole()
+{
+	int x,y;
+	while(!this->isGameOver())
+	{
+		if(scanf(" %i %i",&x,&y) != 2)
+			clearstdin();
+		this->reveal(x,y);
+		this->display();
+	}
+	puts("GAMEOVER!");
+}

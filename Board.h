@@ -5,12 +5,16 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <windows.h>
+
+#include <SFML/Graphics.hpp>
+
 class Board
 {
 private:
 	// Table of Width * Height fields
 	Field *board;
-	
+
 	// Desribes span of mem that contains fields
 	int boardWidth;
 	int boardHeight;
@@ -22,7 +26,36 @@ private:
 
 	// True = GAMEOVER
 	bool gameState;
+
+	// Starts game
+	void startGame();
+
+	// Starts game in console
+	void startGameConsole();
+
+	/* SFML HELPER FUNCTIONS */
+	// Draws grid of game board
+	void drawBoard(sf::RenderWindow &wnd);
+
+	// Fills given VertexArray with horizontal lines of board grid
+	inline void drawHorizontalGrid(sf::VertexArray &larray); 
+	
+	// Fills given VertexArray with vertical lines of board grid
+	inline void drawVerticalGrid(sf::VertexArray &larray);
 public:
+	// Holds size of game window
+	static constexpr int windowWidth = 800;
+	static constexpr int windowHeight = 600;
+
+	// Offset of main board 
+	// from top left corner of game window
+	static constexpr float boardScreenXoffset = 100.0;
+	static constexpr float boardScreenYoffset = 100.0;
+
+	// Size of cells
+	static constexpr float cellWidth = 50.0;
+	static constexpr float cellHeight = 50.0;
+
 	// allocates memory for fields in 
 	// size of width*height*sizeof(Field)
 	Board(int width, int height);
@@ -58,6 +91,9 @@ public:
 	// Returns true if successufully revelad given field
 	// False otherwise
 	bool reveal(int x, int y);
+
+	// Randomly deploys mines and starts game
+	void initStartGame();
 };
 
 #endif
