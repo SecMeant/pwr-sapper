@@ -6,14 +6,12 @@
 #include <stdint.h>
 #include <time.h>
 
-#include <windows.h>
+#include <unistd.h>
 
 #include <thread>
 #include <random>
 
 #include <SFML/Graphics.hpp>
-
-enum GameType {user, random};
 
 class Board
 {
@@ -61,8 +59,8 @@ private:
 	void drawBoardButtons(sf::RenderWindow &wnd);
 public:
 	// Holds size of game window
-	static constexpr int windowWidth = 1280;
-	static constexpr int windowHeight = 720;
+	static constexpr int windowWidth = 800;
+	static constexpr int windowHeight = 800;
 
 	// Offset of main board 
 	// from top left corner of game window
@@ -109,8 +107,11 @@ public:
 	// False otherwise
 	bool reveal(int x, int y);
 
+	// Describes gametype
+	enum GameType {user, random};
+
 	// Randomly deploys mines and starts game
-	void initStartGame(GameType gt);
+	void initStartGame(Board::GameType gt);
 };
 
 #endif

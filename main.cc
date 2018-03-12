@@ -3,8 +3,15 @@
 
 int main(void)
 {
-	Board mainBoard(10,10);
-	mainBoard.initStartGame(GameType::random);
+	char ch = 'y';
+	while(ch == 'y' || ch == 'Y' || ch == '\n')
+	{
+		Board mainBoard(10,10);
+		mainBoard.initStartGame(Board::GameType::random);
+		puts("Wanna restart ? (Y/n): ");
+		ch = getchar();
+		while(getchar() != '\n');
+	}
 
 	return 0;
 }

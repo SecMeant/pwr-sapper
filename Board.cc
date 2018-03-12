@@ -186,18 +186,18 @@ bool Board::isGameOver()
 	return this->gameState;
 }
 
-void Board::initStartGame(GameType gt)
+void Board::initStartGame(Board::GameType gt)
 {
 	this->deployMines(20,1);
 	this->debug_display();
 	if(gt == GameType::user)
 	{
-		this->UIthread = new std::thread(this->startGameConsole,this);
+		this->UIthread = new std::thread(&Board::startGameConsole,this);
 		this->startGame();
 		return;
 	}
 
-	this->UIthread = new std::thread(this->randomPlay,this);
+	this->UIthread = new std::thread(&Board::randomPlay,this);
 	this->startGame();
 }
 
@@ -215,7 +215,7 @@ void Board::randomPlay()
 		int x = this->randomGen() % this->boardWidth;
 		int y = this->randomGen() % this->boardHeight;
 
-		Sleep(1000);
+		sleep(1);
 		
 		this->reveal(x,y);
 	}
