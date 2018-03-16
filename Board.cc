@@ -21,6 +21,9 @@ Board::Board(int width, int height)
 	this->boardWidth = width;
 	this->boardHeight = height;
 
+	this->windowWidth = boardScreenXoffset*2 + width*cellWidth;
+	this->windowHeight = boardScreenYoffset*2 + height*cellHeight;
+
 	this->board = new Field[width * height]();
 }
 
@@ -131,7 +134,7 @@ void Board::display() const
 {
 	Field *f;
 	int minesCount;
-	for(int j = this->boardHeight-1; j >= 0; j--)
+	for(int j = 0; j < this->boardHeight; j++)
 	{
 		for(int i = 0; i < this->boardWidth; i++)
 		{
@@ -189,15 +192,23 @@ bool Board::isGameOver()
 void Board::initStartGame(Board::GameType gt)
 {
 	this->deployMines(20,1);
-	this->debug_display();
-	if(gt == GameType::user)
+
+	switch(gt)
 	{
-		this->UIthread = new std::thread(&Board::startGameConsole,this);
-		this->startGame();
-		return;
+		case GameType::user:
+			// just this->startGame
+			break;
+		case GameType::random:
+			this->UIthread = new std::thread(&Board::randomPlay,this);
+			break;
+		case GameType::console:
+			this->UIthread = new std::thread(&Board::startGameConsole,this);
+			break;
+		default:
+			puts("Error! Wrong GameType.");
+			return;
 	}
 
-	this->UIthread = new std::thread(&Board::randomPlay,this);
 	this->startGame();
 }
 
@@ -229,13 +240,13 @@ void Board::drawBoardButtons(sf::RenderWindow &wnd)
 	
 	Field *field;
 
-	for(int i=0; i<this->boardHeight; i++)
+	for(int i=this->boardHeight-1; i>=0; --i)
 	{
-		for(int j=0; j<this->boardWidth; j++)
+		for(int j=0; j<this->boardWidth; ++j)
 		{
 			gridButtons[(i*this->boardWidth)+j].setPosition(
-					j*50+this->boardScreenYoffset+1,
-					i*50+this->boardScreenXoffset+1);
+					j*this->cellHeight+this->boardScreenYoffset+1,
+					i*this->cellWidth+this->boardScreenXoffset+1);
 			field = getFromBoard(j,i);
 			if(field->isCovered())
 			{
@@ -249,7 +260,6 @@ void Board::drawBoardButtons(sf::RenderWindow &wnd)
 			}
 		}
 	}
-	
 
 	for(auto btn:gridButtons)
 		wnd.draw(btn);
@@ -312,7 +322,11 @@ void Board::drawVerticalGrid(sf::RenderWindow &wnd)
 void Board::startGame()
 {
 	sf::RenderWindow 
-		window(sf::VideoMode(this->windowWidth,this->windowHeight), "SFML Sapper");
+		window(
+				sf::VideoMode(this->windowWidth,this->windowHeight), 
+				"SFML Sapper",
+				sf::Style::Close
+				);
 
 	// Start the game loop
 	while (window.isOpen())
@@ -324,6 +338,20 @@ void Board::startGame()
 			// Close window : exit
 			if (event.type == sf::Event::Closed)
 				window.close();
+
+			if(isGameOver())
+				continue;
+
+			if(event.type == sf::Event::MouseButtonPressed)
+			{
+				int register xpressed = 
+					(int)((event.mouseButton.x-this->boardScreenXoffset)/this->cellWidth);
+				
+				int register ypressed = 
+					(int)((event.mouseButton.y-this->boardScreenYoffset)/this->cellHeight);
+				
+				this->reveal(xpressed, ypressed);
+			}
 		}
 
 		// Clear screen

@@ -19,6 +19,10 @@ private:
 	// Table of Width * Height fields
 	Field *board;
 
+	// Holds size of game window
+	int windowWidth;
+	int windowHeight;
+
 	// Desribes span of mem that contains fields
 	int boardWidth;
 	int boardHeight;
@@ -58,18 +62,14 @@ private:
 	// Draws buttons on grid according to its state
 	void drawBoardButtons(sf::RenderWindow &wnd);
 public:
-	// Holds size of game window
-	static constexpr int windowWidth = 800;
-	static constexpr int windowHeight = 800;
-
 	// Offset of main board 
 	// from top left corner of game window
-	static constexpr float boardScreenXoffset = 100.0;
-	static constexpr float boardScreenYoffset = 100.0;
+	static constexpr float boardScreenXoffset = 75.0;
+	static constexpr float boardScreenYoffset = 75.0;
 
 	// Size of cells
-	static constexpr float cellWidth = 50.0;
-	static constexpr float cellHeight = 50.0;
+	static constexpr float cellWidth = 35.0;
+	static constexpr float cellHeight = 35.0;
 
 	// allocates memory for fields in 
 	// size of width*height*sizeof(Field)
@@ -108,7 +108,7 @@ public:
 	bool reveal(int x, int y);
 
 	// Describes gametype
-	enum GameType {user, random};
+	enum GameType {user, random, console};
 
 	// Randomly deploys mines and starts game
 	void initStartGame(Board::GameType gt);
