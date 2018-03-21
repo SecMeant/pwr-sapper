@@ -40,6 +40,10 @@ private:
 	// Used for random play
 	std::default_random_engine randomGen;
 
+	// holds textures of numbers (0-8) that are rendered
+	// to indicate mines count around revealed button
+	std::array<sf::Texture, 9> numberTextures;
+
 	// Starts game
 	void startGame();
 
@@ -48,6 +52,11 @@ private:
 
 	// Randomly seletcs button to reveal
 	void randomPlay();
+
+	// Loads needed textures from assets directory
+	// On success 0 is returned
+	// Otherwise number of unsuccessfully loaded textures
+	int loadAssets();
 
 	/* SFML HELPER FUNCTIONS */
 	// Draws grid of game board

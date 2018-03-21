@@ -25,6 +25,8 @@ Board::Board(int width, int height)
 	this->windowHeight = boardScreenYoffset*2 + height*cellHeight;
 
 	this->board = new Field[width * height]();
+	
+	this->loadAssets();
 }
 
 Board::~Board()
@@ -212,6 +214,26 @@ void Board::initStartGame(Board::GameType gt)
 	this->startGame();
 }
 
+int Board::loadAssets()
+{
+	int ret = 0;
+	char idx = '0';
+	std::string textureFileName(".\\assets\\X.png");
+
+	printf("Loading textures . . . \n");
+	
+	for(auto& tex:this->numberTextures)
+	{
+		textureFileName.at(9) = idx;
+		ret += !tex.loadFromFile(textureFileName.c_str());
+		++idx;
+	}
+
+	printf("Error counter: %i\n", ret);
+
+	return ret;
+}
+
 void Board::drawBoard(sf::RenderWindow &wnd)
 {
 	this->drawHorizontalGrid(wnd);
@@ -236,28 +258,34 @@ void Board::randomPlay()
 void Board::drawBoardButtons(sf::RenderWindow &wnd)
 {
 	std::vector<sf::RectangleShape> gridButtons(this->boardWidth*this->boardHeight,
-			sf::RectangleShape(sf::Vector2f(this->cellWidth-2, this->cellHeight-2)));
+			sf::RectangleShape(sf::Vector2f(this->cellWidth-3, this->cellHeight-3)));
 	
 	Field *field;
+
+	int gridOffset = 0;
+	int minesCount = 0;
 
 	for(int i=this->boardHeight-1; i>=0; --i)
 	{
 		for(int j=0; j<this->boardWidth; ++j)
 		{
 			gridButtons[(i*this->boardWidth)+j].setPosition(
-					j*this->cellHeight+this->boardScreenYoffset+1,
-					i*this->cellWidth+this->boardScreenXoffset+1);
+					j*this->cellWidth+this->boardScreenXoffset+2,
+					i*this->cellHeight+this->boardScreenYoffset+1);
 			field = getFromBoard(j,i);
+			gridOffset = (i*this->boardWidth)+j;
 			if(field->isCovered())
 			{
-				gridButtons[(i*this->boardWidth)+j].setFillColor(sf::Color::Green);
+				gridButtons[gridOffset].setFillColor(sf::Color::Green);
 				continue;
 			}
 			if(field->isMined())
 			{
-				gridButtons[(i*this->boardWidth)+j].setFillColor(sf::Color::Red);
+				gridButtons[gridOffset].setFillColor(sf::Color::Red);
 				continue;
 			}
+			minesCount = this->countMines(j,i);
+			gridButtons[gridOffset].setTexture(&this->numberTextures.at(minesCount), true);
 		}
 	}
 
