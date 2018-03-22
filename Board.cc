@@ -1,10 +1,8 @@
-#include "Board.h"
-
-inline void clearstdin()
-{fseek(stdin,0,SEEK_END);}
+#include <sstream>
+#include "Board.hpp"
 
 Board::Board(int width, int height)
-	:gameState(0), UIthread(nullptr), randomGen(time(NULL))
+	:buttonsToReveal(0), gameState(pending), UIthread(nullptr), randomGen(time(NULL)), assetsPath("./assets/")
 {
 	if(width <= 0)
 	{
@@ -21,8 +19,8 @@ Board::Board(int width, int height)
 	this->boardWidth = width;
 	this->boardHeight = height;
 
-	this->windowWidth = boardScreenXoffset*2 + width*cellWidth;
-	this->windowHeight = boardScreenYoffset*2 + height*cellHeight;
+	this->windowWidth = int(boardScreenXoffset*2 + width*cellWidth);
+	this->windowHeight = int(boardScreenYoffset*2 + height*cellHeight);
 
 	this->board = new Field[width * height]();
 	
@@ -40,14 +38,20 @@ void Board::deployMines(int n, bool random)
 
 	if(random)
 	{
-		srand(time(NULL));
 		for(int i = 0; i < n; i++)
 		{
-			int xcoord = rand() % this->boardWidth;
-			int ycoord = rand() % this->boardHeight;
+			int xcoord = int(this->randomGen() % this->boardWidth);
+			int ycoord = int(this->randomGen() % this->boardHeight);
 
 			f = this->getFromBoard(xcoord, ycoord);
-			f->setMineState(1);
+			// I know its slow ;]
+			if(f->isMined())
+			{
+				i--;
+				continue;
+			}
+
+			f->setMineState(true);
 		}
 		return;
 	}
@@ -68,7 +72,7 @@ void Board::deployMines(int n, bool random)
 
 void Board::debug_display() const
 {
-	for(int j = this->boardHeight-1; j >= 0; j--)
+	for(int j = 0; j < this->boardHeight; j++)
 	{
 		for(int i = 0; i < this->boardWidth; i++)
 		{
@@ -120,14 +124,14 @@ int Board::countMines(int x, int y) const
 {
 	int ret = 0;
 	ret += hasMine(x-1,y+1); // top left
-	ret += hasMine(x,y+1);   // top
+	ret += hasMine(x,y+1);	 // top
 	ret += hasMine(x+1,y+1); // top right
 
-	ret += hasMine(x-1,y);   // left
-	ret += hasMine(x+1,y);   // right
+	ret += hasMine(x-1,y);	 // left
+	ret += hasMine(x+1,y);	 // right
 
 	ret += hasMine(x-1,y-1); // bottom left
-	ret += hasMine(x,y-1);   // bottom
+	ret += hasMine(x,y-1);	 // bottom
 	ret += hasMine(x+1,y-1); // bottom right
 	return ret;
 }
@@ -173,27 +177,56 @@ bool Board::reveal(int x, int y)
 	Field *f = getFromBoard(x, y);
 
 	if(f == nullptr)
-		return 0;
+		return false;
 
 	if(!f->isCovered())
-		return 0;
+		return false;
 
-	f->setCoverState(0);
-	
+	f->setCoverState(false);
+
+	this->buttonsToReveal--;
+
+	if(this->buttonsToReveal == 0)
+		this->gameState = win; // WIN !
+
 	if(f->isMined())
-		this->gameState = 1; // GAMEOVER
+		this->gameState = lose; // lose
+ 
+	return true;
+}
 
-	return 1;
+bool Board::revealUnflagged(int x, int y)
+{
+	Field *f = getFromBoard(x, y);
+	
+	if(f == nullptr)
+		return false;
+
+	if(f->isFlagged())
+		return false;
+
+	return this->reveal(x,y);
 }
 
 bool Board::isGameOver()
 {
+	if(this->gameState == pending)
+		return false;
+	return true;
+}
+
+Board::GameState Board::getGameState()
+{
 	return this->gameState;
 }
 
-void Board::initStartGame(Board::GameType gt)
+void Board::initStartGame(Board::GameType gt, int minesCount)
 {
-	this->deployMines(20,1);
+	this->deployMines(minesCount,true);
+
+	// Calculate buttons to reveal
+	this->buttonsToReveal = this->boardWidth*this->boardHeight;
+	this->buttonsToReveal -= minesCount;
 
 	switch(gt)
 	{
@@ -218,20 +251,26 @@ int Board::loadAssets()
 {
 	int ret = 0;
 	char idx = '0';
-	std::string textureFileName(".\\assets\\X.png");
 
-	printf("Loading textures . . . \n");
-	
+	fprintf(stderr, "Loading textures . . . \n");
+
 	for(auto& tex:this->numberTextures)
 	{
-		textureFileName.at(9) = idx;
-		ret += !tex.loadFromFile(textureFileName.c_str());
+		std::stringstream ss;
+		ss << this->assetsPath.c_str() << idx << ".png";
+		ret += !tex.loadFromFile(ss.str().c_str());
 		++idx;
 	}
-
-	printf("Error counter: %i\n", ret);
+	
+	this->flagTexture.loadFromFile((this->assetsPath+"flag.png").c_str());
 
 	return ret;
+}
+
+void Board::flagButton(int xcoord, int ycoord)
+{
+	Field *f = getFromBoard(xcoord, ycoord);
+	f->setFlagState(!f->isFlagged());
 }
 
 void Board::drawBoard(sf::RenderWindow &wnd)
@@ -245,8 +284,8 @@ void Board::randomPlay()
 {
 	while(!this->isGameOver())
 	{
-		int x = this->randomGen() % this->boardWidth;
-		int y = this->randomGen() % this->boardHeight;
+		int x = int(this->randomGen() % this->boardWidth);
+		int y = int(this->randomGen() % this->boardHeight);
 
 		sleep(1);
 		
@@ -276,6 +315,12 @@ void Board::drawBoardButtons(sf::RenderWindow &wnd)
 			gridOffset = (i*this->boardWidth)+j;
 			if(field->isCovered())
 			{
+				if(field->isFlagged())
+				{
+					gridButtons[gridOffset].setTexture(&this->flagTexture);
+					continue;
+				}
+
 				gridButtons[gridOffset].setFillColor(sf::Color::Green);
 				continue;
 			}
@@ -285,7 +330,7 @@ void Board::drawBoardButtons(sf::RenderWindow &wnd)
 				continue;
 			}
 			minesCount = this->countMines(j,i);
-			gridButtons[gridOffset].setTexture(&this->numberTextures.at(minesCount), true);
+			gridButtons[gridOffset].setTexture(&this->numberTextures.at(minesCount));
 		}
 	}
 
@@ -301,9 +346,15 @@ void Board::drawHorizontalGrid(sf::RenderWindow &wnd)
 	register float ypoint;
 
 	sf::Color clr(255,255,255);
-	if(this->isGameOver())
+	if(this->gameState == lose)
 	{
 		clr.g = 0;
+		clr.b = 0;
+	}
+	else if(this->gameState == win)
+	{
+		clr.r = 0;
+		clr.g = 255;
 		clr.b = 0;
 	}
 
@@ -326,11 +377,17 @@ void Board::drawVerticalGrid(sf::RenderWindow &wnd)
 	
 	register float xpoint;
 	register float ypoint;
-
+	
 	sf::Color clr(255,255,255);
-	if(this->isGameOver())
+	if(this->gameState == lose)
 	{
 		clr.g = 0;
+		clr.b = 0;
+	}
+	else if(this->gameState == win)
+	{
+		clr.r = 0;
+		clr.g = 255;
 		clr.b = 0;
 	}
 
@@ -372,13 +429,21 @@ void Board::startGame()
 
 			if(event.type == sf::Event::MouseButtonPressed)
 			{
-				int register xpressed = 
-					(int)((event.mouseButton.x-this->boardScreenXoffset)/this->cellWidth);
-				
-				int register ypressed = 
-					(int)((event.mouseButton.y-this->boardScreenYoffset)/this->cellHeight);
-				
-				this->reveal(xpressed, ypressed);
+				int register xpressed =
+								(int) ((event.mouseButton.x - this->boardScreenXoffset) / this->cellWidth);
+
+				int register ypressed =
+								(int) ((event.mouseButton.y - this->boardScreenYoffset) / this->cellHeight);
+
+				if (event.mouseButton.button == sf::Mouse::Left)
+				{
+					this->revealUnflagged(xpressed, ypressed);
+				}
+
+				else if(event.mouseButton.button == sf::Mouse::Right)
+				{
+					this->flagButton(xpressed, ypressed);
+				}
 			}
 		}
 
@@ -398,9 +463,15 @@ void Board::startGameConsole()
 	int x,y;
 	while(!this->isGameOver())
 	{
-		if(scanf(" %i %i",&x,&y) != 2)
-			clearstdin();
-		this->reveal(x,y);
+		// Get user console input
+		if(scanf("%i %i", &x, &y)!=2)
+		// if input was invalid skip entered command line
+		{
+			while(getchar()!='\n');
+			continue;
+		}
+
+		this->revealUnflagged(x,y);
 		this->display();
 	}
 	puts("GAMEOVER!");

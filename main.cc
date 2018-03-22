@@ -1,5 +1,4 @@
-#include "Board.h"
-#include "Field.h"
+#include "Board.hpp"
 
 int main(void)
 {
@@ -7,7 +6,7 @@ int main(void)
 	while(ch == 'y' || ch == 'Y' || ch == '\n')
 	{
 		Board mainBoard(10,10);
-		mainBoard.initStartGame(Board::GameType::user);
+		mainBoard.initStartGame(Board::GameType::user, 10);
 		puts("Wanna restart ? (Y/n): ");
 		ch = getchar();
 		while(getchar() != '\n');

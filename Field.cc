@@ -1,4 +1,4 @@
-#include "Field.h"
+#include "Field.hpp"
 
 bool Field::isMined() const {return this->mineState;}
 bool Field::isFlagged() const {return this->flagState;}
