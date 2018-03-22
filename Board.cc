@@ -38,6 +38,11 @@ void Board::deployMines(int n, bool random)
 
 	if(random)
 	{
+
+		// Calculate buttons to reveal
+		this->buttonsToReveal = this->boardWidth*this->boardHeight;
+		this->buttonsToReveal -= n;
+
 		for(int i = 0; i < n; i++)
 		{
 			int xcoord = int(this->randomGen() % this->boardWidth);
@@ -58,16 +63,26 @@ void Board::deployMines(int n, bool random)
 	
 	for(int i = 0, j = 0; i < this->boardWidth; i++, j++)
 	{
-		// Positive diagonla slope
-		this->getFromBoard(i, j)->setMineState(1);
-
-		// Negative diagonal slope
-		this->getFromBoard(this->boardWidth-1-i, this->boardHeight-1-i)->setMineState(1);
+		// Negative from bottom diagonal slope
+		f = this->getFromBoard(this->boardWidth-1-i, this->boardHeight-1-i);
+		if(f!=nullptr)
+			f->setMineState(true);
+		
+		// Positive from bottom diagonal slope
+		f = this->getFromBoard(i, this->boardHeight-1-j);
+		if(f!=nullptr)
+			f->setMineState(true);
 
 		// Top row
-		this->getFromBoard(i, this->boardHeight-1)->setMineState(1);
+		f = this->getFromBoard(i, 0);
+		if(f!=nullptr)
+			f->setMineState(true);
 	}
 
+	// Calculate buttons to reveal
+	this->buttonsToReveal = this->boardWidth*this->boardHeight;
+	this->buttonsToReveal -= this->getMinesNumber();
+	printf("%i",this->buttonsToReveal);
 }
 
 void Board::debug_display() const
@@ -224,10 +239,6 @@ void Board::initStartGame(Board::GameType gt, int minesCount)
 {
 	this->deployMines(minesCount,true);
 
-	// Calculate buttons to reveal
-	this->buttonsToReveal = this->boardWidth*this->boardHeight;
-	this->buttonsToReveal -= minesCount;
-
 	switch(gt)
 	{
 		case GameType::user:
@@ -245,6 +256,20 @@ void Board::initStartGame(Board::GameType gt, int minesCount)
 	}
 
 	this->startGame();
+}
+
+int Board::getMinesNumber() const
+{
+	auto ret = 0;
+	for(int i = 0; i < this->boardHeight; i++)
+	{
+		for(int j = 0; j < this->boardWidth; j++)
+		{
+			if(this->getFromBoard(j,i)->isMined())
+				ret++;
+		}
+	}
+	return ret;
 }
 
 int Board::loadAssets()
@@ -270,6 +295,10 @@ int Board::loadAssets()
 void Board::flagButton(int xcoord, int ycoord)
 {
 	Field *f = getFromBoard(xcoord, ycoord);
+	
+	if(f == nullptr)
+		return;
+
 	f->setFlagState(!f->isFlagged());
 }
 
@@ -429,6 +458,14 @@ void Board::startGame()
 
 			if(event.type == sf::Event::MouseButtonPressed)
 			{
+				// Out of width bound click
+				if(event.mouseButton.x < this->boardScreenXoffset)
+					continue;
+
+				// Out of height bound click
+				if(event.mouseButton.y < this->boardScreenYoffset)
+					continue;
+
 				int register xpressed =
 								(int) ((event.mouseButton.x - this->boardScreenXoffset) / this->cellWidth);
 

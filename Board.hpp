@@ -71,6 +71,9 @@ private:
 	// Randomly seletcs button to reveal
 	void randomPlay();
 
+	// Returns number of mines on board
+	int getMinesNumber() const;
+
 	// Loads needed textures from assets directory
 	// On success 0 is returned
 	// Otherwise number of unsuccessfully loaded textures

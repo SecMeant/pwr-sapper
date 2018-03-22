@@ -5,7 +5,7 @@ int main(void)
 	char ch = 'y';
 	while(ch == 'y' || ch == 'Y' || ch == '\n')
 	{
-		Board mainBoard(10,10);
+		Board mainBoard(3,5);
 		mainBoard.initStartGame(Board::GameType::user, 10);
 		puts("Wanna restart ? (Y/n): ");
 		ch = getchar();
