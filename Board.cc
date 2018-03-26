@@ -2,7 +2,8 @@
 #include "Board.hpp"
 
 Board::Board(int width, int height)
-	:buttonsToReveal(0), gameState(pending), UIthread(nullptr), randomGen(time(NULL)), assetsPath("./assets/")
+:buttonsToReveal(0), restartOnEnd(norestart), gameState(pending),
+ UIthread(nullptr), randomGen(time(NULL)), assetsPath("./assets/")
 {
 	if(width <= 0)
 	{
@@ -25,6 +26,35 @@ Board::Board(int width, int height)
 	this->board = new Field[width * height]();
 	
 	this->loadAssets();
+	this->loadFonts(defaultFont);
+
+	{ // deletes helper variables
+		this->restartButton.setString("Restart");
+		this->restartButton.setFont(mainFont);
+		this->restartButton.setCharacterSize(restartButtonFontSize);
+		this->restartButton.setColor({255,0,255});
+		
+		int restartButtonWidth = this->restartButton.getGlobalBounds().width;
+		int restartButtonHeight = this->restartButton.getGlobalBounds().height;
+		register int xoffRB = (this->windowWidth-restartButtonWidth)/2;
+		register int yoffRB = this->windowHeight-restartButtonHeight-30;
+		
+		this->restartButton.setPosition(xoffRB,yoffRB);
+	}
+
+	{ // ditto
+		this->gameStateMsg.setString("asdf");
+		this->gameStateMsg.setFont(mainFont);
+		this->gameStateMsg.setCharacterSize(gameStateMsgFontSize);
+		this->gameStateMsg.setColor({0,255,0});
+
+		int gameStateMsgWidth = this->gameStateMsg.getGlobalBounds().width;
+		register int xoffRB = (this->windowWidth-gameStateMsgWidth)/2;
+		register int yoffRB = 0;
+		
+		this->gameStateMsg.setPosition(xoffRB,yoffRB);
+	}
+	
 }
 
 Board::~Board()
@@ -202,11 +232,18 @@ bool Board::reveal(int x, int y)
 	this->buttonsToReveal--;
 
 	if(this->buttonsToReveal == 0)
+	{
 		this->gameState = win; // WIN !
+		this->gameStateMsg.setString("You win!");
+	}
 
 	if(f->isMined())
+	{
 		this->gameState = lose; // lose
- 
+		this->gameStateMsg.setString("You have lost!");
+		this->gameStateMsg.setColor({125,0,0});
+	}
+
 	return true;
 }
 
@@ -235,7 +272,8 @@ Board::GameState Board::getGameState()
 	return this->gameState;
 }
 
-void Board::initStartGame(Board::GameType gt, int minesCount)
+Board::EndGameState
+Board::initStartGame(Board::GameType gt, int minesCount)
 {
 	this->deployMines(minesCount,true);
 
@@ -252,10 +290,15 @@ void Board::initStartGame(Board::GameType gt, int minesCount)
 			break;
 		default:
 			puts("Error! Wrong GameType.");
-			return;
+			return Board::EndGameState::norestart;
 	}
 
 	this->startGame();
+
+	// True if game should be restarted after close
+	// False otherwise
+	// this->startGame sets appropriate value
+	return this->restartOnEnd;
 }
 
 int Board::getMinesNumber() const
@@ -292,6 +335,19 @@ int Board::loadAssets()
 	return ret;
 }
 
+int Board::loadFonts(const std::string &fontname)
+{
+	fprintf(stderr, "Loading fonts . . . \n");
+	
+	if(!this->mainFont.loadFromFile(fontname.c_str()))
+	{
+		puts("Error when loading font.");
+		return 1;
+	}
+
+	return 0;
+}
+
 void Board::flagButton(int xcoord, int ycoord)
 {
 	Field *f = getFromBoard(xcoord, ycoord);
@@ -326,7 +382,7 @@ void Board::randomPlay()
 void Board::drawBoardButtons(sf::RenderWindow &wnd)
 {
 	std::vector<sf::RectangleShape> gridButtons(this->boardWidth*this->boardHeight,
-			sf::RectangleShape(sf::Vector2f(this->cellWidth-3, this->cellHeight-3)));
+			sf::RectangleShape(sf::Vector2f(this->cellWidth-2, this->cellHeight-2)));
 	
 	Field *field;
 
@@ -338,7 +394,7 @@ void Board::drawBoardButtons(sf::RenderWindow &wnd)
 		for(int j=0; j<this->boardWidth; ++j)
 		{
 			gridButtons[(i*this->boardWidth)+j].setPosition(
-					j*this->cellWidth+this->boardScreenXoffset+2,
+					j*this->cellWidth+this->boardScreenXoffset+1,
 					i*this->cellHeight+this->boardScreenYoffset+1);
 			field = getFromBoard(j,i);
 			gridOffset = (i*this->boardWidth)+j;
@@ -433,6 +489,85 @@ void Board::drawVerticalGrid(sf::RenderWindow &wnd)
 	wnd.draw(vLines);
 }
 
+void Board::drawRestartButton
+(sf::RenderWindow &wnd)
+{
+	wnd.draw(this->restartButton);
+}
+
+void Board::drawGameStateMsg
+(sf::RenderWindow &wnd)
+{
+	this->transformTextToWindowHeader(this->gameStateMsg);
+	wnd.draw(this->gameStateMsg);
+}
+
+void Board::transformTextToWindowHeader(sf::Text &txt)
+{
+	txt.setPosition(
+		(this->windowWidth-txt.getGlobalBounds().width)/2,
+		(int)this->windowHeight*0.05);
+	while(txt.getGlobalBounds().width > (this->windowWidth*0.8))
+	{
+		txt.setCharacterSize(
+			txt.getCharacterSize()/2);
+			txt.setPosition(
+				(this->windowWidth-txt.getGlobalBounds().width)/2,
+				(int)this->windowHeight*0.05);
+	}
+}
+
+size_t Board::waitForButtonClick
+(const std::vector<sf::Text> &btns, sf::RenderWindow &wnd)
+{
+	sf::Event event;
+	size_t i = 0;
+	while (wnd.isOpen())
+	{
+		while (wnd.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				wnd.close();
+
+			if(event.type == sf::Event::MouseButtonPressed)
+			{
+				for(auto btn:btns)
+				{
+					if(btn.getGlobalBounds().contains(
+								event.mouseButton.x,
+								event.mouseButton.y))
+						return i;
+					++i;
+				}
+			}
+		}
+	}
+	return SIZE_MAX;
+}
+
+size_t Board::waitForButtonClick
+(const sf::Text &btn, sf::RenderWindow &wnd)
+{
+	sf::Event event;
+	while (wnd.isOpen())
+	{
+		while (wnd.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				wnd.close();
+
+			if(event.type == sf::Event::MouseButtonPressed)
+			{
+				if(btn.getGlobalBounds().contains(
+							event.mouseButton.x,
+							event.mouseButton.y))
+					return 0;
+			}
+		}
+	}
+	return SIZE_MAX; // window killed
+}
+
 void Board::startGame()
 {
 	sf::RenderWindow 
@@ -441,6 +576,8 @@ void Board::startGame()
 				"SFML Sapper",
 				sf::Style::Close
 				);
+
+	window.clear();
 
 	// Start the game loop
 	while (window.isOpen())
@@ -454,7 +591,10 @@ void Board::startGame()
 				window.close();
 
 			if(isGameOver())
-				continue;
+			{
+				this->handleGameOver(window);
+				return;
+			}
 
 			if(event.type == sf::Event::MouseButtonPressed)
 			{
@@ -484,15 +624,28 @@ void Board::startGame()
 			}
 		}
 
-		// Clear screen
-		window.clear();
-
 		// Draws main grid of board
 		this->drawBoard(window);
 
 		// Update the window
 		window.display();
 	}
+}
+
+void Board::handleGameOver(sf::RenderWindow &wnd)
+{
+	this->drawGameStateMsg(wnd);
+	this->handleRestart(wnd);
+}
+
+void Board::handleRestart(sf::RenderWindow &wnd)
+{
+	this->drawRestartButton(wnd);
+	wnd.display();
+
+	this->restartOnEnd = Board::EndGameState::restart;
+	if(this->waitForButtonClick(this->restartButton, wnd))
+		this->restartOnEnd = Board::EndGameState::norestart;
 }
 
 void Board::startGameConsole()

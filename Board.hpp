@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
+#include <string>
 
 #include <unistd.h>
 
@@ -13,6 +14,11 @@
 
 #include <SFML/Graphics.hpp>
 
+constexpr int restartButtonFontSize = 26;
+constexpr int gameStateMsgFontSize = 36;
+
+constexpr const char * defaultFont 
+	= "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
 
 class Board
 {
@@ -21,6 +27,10 @@ public:
 	// gameover : user lost
 	// win : user won
 	enum GameState {pending, lose, win};
+
+	// Used to indicate wheter game should be 
+	// restarted when current closes or not
+	enum EndGameState {restart, norestart};
 
 	// user : user uses gui to play
 	// random : computer reveal buttons randomly
@@ -42,6 +52,9 @@ private:
 	// Holds value of buttons that must be revealed to win
 	int buttonsToReveal;
 
+	// Filled with appropriate value by this->startGame
+	EndGameState restartOnEnd;
+
 	// Returns ptr to field from board
 	// described with XY coordinates
 	// Returns nullptr if coordinates are out of bound
@@ -62,6 +75,13 @@ private:
 	std::array<sf::Texture, 9> numberTextures;
 	sf::Texture flagTexture;
 
+	sf::Font mainFont;
+
+	sf::Text restartButton;
+
+	// Draws win or lose when game ends
+	sf::Text gameStateMsg;
+
 	// Starts game
 	void startGame();
 
@@ -79,8 +99,21 @@ private:
 	// Otherwise number of unsuccessfully loaded textures
 	int loadAssets();
 
+	// Loads font specified by passed string
+	// to this->mainFont
+	// If no errors occur 0 is returned
+	// Non-zero otherwise
+	int loadFonts(const std::string &fontname);
+
 	// Negate flag state of given button
 	void flagButton(int xcoord, int ycoord);
+
+	// Called when game is over to handle it
+	void handleGameOver(sf::RenderWindow &wnd);
+
+	// Waits for user to click on yes/no when asked 
+	// for restart
+	void handleRestart(sf::RenderWindow &wnd);
 
 	/* SFML HELPER FUNCTIONS */
 	// Draws grid of game board
@@ -94,6 +127,34 @@ private:
 
 	// Draws buttons on grid according to its state
 	void drawBoardButtons(sf::RenderWindow &wnd);
+
+	// Draws restart button on screen
+	// All information about button is taken from
+	// button class
+	void drawRestartButton(sf::RenderWindow &wnd);
+
+	// Draws you win or you lose string
+	void drawGameStateMsg (sf::RenderWindow &wnd);
+
+	// Sets text to middle of screen in width and
+	// to 20% of height from top
+	// Also makes font enough size to fit into screen
+	void transformTextToWindowHeader(sf::Text &txt);
+
+	// Wait for user to click on button (sf::Text)
+	// As argument takes window to operate on and
+	// vector of buttons to watch for.
+	// Returns index in given vector of btn that has been clicked
+	// if SIG KILL occured SIZE_MAX is returned
+	// CAUTION: IF SIG KILL IS SENT PASSED WINDOW IS CLOSED
+	size_t waitForButtonClick
+	(const std::vector<sf::Text> &btns, sf::RenderWindow &wnd);
+
+	// Very similar to overloaded version but watches only 1 button
+	// Returns SIZE_MAX if SIG KILL occured
+	// Other undefined value otherwise
+	size_t waitForButtonClick
+	(const sf::Text &btn, sf::RenderWindow &wnd);
 public:
 	// Offset of main board 
 	// from top left corner of game window
@@ -149,7 +210,10 @@ public:
 	bool revealUnflagged(int x, int y);
 
 	// Randomly deploys mines and starts game
-	void initStartGame(Board::GameType gt, int minesCount);
+	// Returns when game is over.
+	// Returns true if game should be restarted
+	// or false otherwise
+	EndGameState initStartGame(Board::GameType gt, int minesCount);
 };
 
 #endif
