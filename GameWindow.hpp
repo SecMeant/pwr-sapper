@@ -1,7 +1,8 @@
 #ifndef GAMEWINDOW_H
 #define GAMEWINDOW_H
 
-#include "Field.hpp"
+#include "Board.hpp"
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
@@ -38,27 +39,17 @@ public:
 	enum GameType {user, random, console};
 
 private:
-	// Table of Width * Height fields
-	Field *board;
+	Board board;
 
 	// Holds size of game window
 	int windowWidth;
 	int windowHeight;
-
-	// Desribes span of mem that contains fields
-	int boardWidth;
-	int boardHeight;
 
 	// Holds value of buttons that must be revealed to win
 	int buttonsToReveal;
 
 	// Filled with appropriate value by this->startGame
 	EndGameState restartOnEnd;
-
-	// Returns ptr to field from board
-	// described with XY coordinates
-	// Returns nullptr if coordinates are out of bound
-	Field* getFromBoard(int x, int y) const;
 
 	GameState gameState;
 

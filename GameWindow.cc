@@ -2,29 +2,13 @@
 #include "GameWindow.hpp"
 
 GameWindow::GameWindow(int width, int height)
-:buttonsToReveal(0), restartOnEnd(norestart), gameState(pending),
+:board(width, height), buttonsToReveal(0), restartOnEnd(norestart),
+ gameState(pending),
  randomGen(time(NULL)), assetsPath("./assets/")
 {
-	if(width <= 0)
-	{
-		width = 1;
-		puts("Board's width cannot be 0 or less!\n");
-	}
-
-	if(height <= 0)
-	{
-		height = 1;
-		puts("Board's height cannot be 0 or less!\n");
-	}
-
-	this->boardWidth = width;
-	this->boardHeight = height;
-
 	this->windowWidth = int(boardScreenXoffset*2 + width*cellWidth);
 	this->windowHeight = int(boardScreenYoffset*2 + height*cellHeight);
 
-	this->board = new Field[width * height]();
-	
 	this->loadAssets();
 	this->loadFonts(defaultFont);
 
@@ -58,7 +42,6 @@ GameWindow::GameWindow(int width, int height)
 
 GameWindow::~GameWindow()
 {
-	delete [] this->board;
 }
 
 void GameWindow::deployMines(int n, bool random)
@@ -69,15 +52,15 @@ void GameWindow::deployMines(int n, bool random)
 	{
 
 		// Calculate buttons to reveal
-		this->buttonsToReveal = this->boardWidth*this->boardHeight;
+		this->buttonsToReveal = this->board.width*this->board.height;
 		this->buttonsToReveal -= n;
 
 		for(int i = 0; i < n; i++)
 		{
-			int xcoord = int(this->randomGen() % this->boardWidth);
-			int ycoord = int(this->randomGen() % this->boardHeight);
+			int xcoord = int(this->randomGen() % this->board.width);
+			int ycoord = int(this->randomGen() % this->board.height);
 
-			f = this->getFromBoard(xcoord, ycoord);
+			f = this->board.get(xcoord, ycoord);
 			// I know its slow ;]
 			if(f->isMined())
 			{
@@ -90,60 +73,45 @@ void GameWindow::deployMines(int n, bool random)
 		return;
 	}
 	
-	for(int i = 0, j = 0; i < this->boardWidth; i++, j++)
+	for(int i = 0, j = 0; i < this->board.width; i++, j++)
 	{
 		// Negative from bottom diagonal slope
-		f = this->getFromBoard(this->boardWidth-1-i, this->boardHeight-1-i);
+		f = this->board.get(this->board.width-1-i, this->board.height-1-i);
 		if(f!=nullptr)
 			f->setMineState(true);
 		
 		// Positive from bottom diagonal slope
-		f = this->getFromBoard(i, this->boardHeight-1-j);
+		f = this->board.get(i, this->board.height-1-j);
 		if(f!=nullptr)
 			f->setMineState(true);
 
 		// Top row
-		f = this->getFromBoard(i, 0);
+		f = this->board.get(i, 0);
 		if(f!=nullptr)
 			f->setMineState(true);
 	}
 
 	// Calculate buttons to reveal
-	this->buttonsToReveal = this->boardWidth*this->boardHeight;
+	this->buttonsToReveal = this->board.width*this->board.height;
 	this->buttonsToReveal -= this->getMinesNumber();
 	printf("%i",this->buttonsToReveal);
 }
 
 void GameWindow::debug_display() const
 {
-	for(int j = 0; j < this->boardHeight; j++)
+	for(int j = 0; j < this->board.height; j++)
 	{
-		for(int i = 0; i < this->boardWidth; i++)
+		for(int i = 0; i < this->board.width; i++)
 		{
-			this->getFromBoard(i, j)->info();
+			this->board.get(i, j)->info();
 		}
 		putchar('\n');
 	}
 }
 
-Field * GameWindow::getFromBoard(int x, int y) const
-{
-	if(x >= this->boardWidth || x < 0)
-	{
-		return nullptr;
-	}
-	
-	if(y >= this->boardHeight || y < 0)
-	{
-		return nullptr;
-	}
-
-	return this->board + (y*this->boardWidth) + x;
-}
-
 bool GameWindow::setField(int x, int y, bool mState,bool cState, bool fState)
 {
-	Field *f = this->getFromBoard(x,y);
+	Field *f = this->board.get(x,y);
 
 	if(f == nullptr)
 		return 0;
@@ -157,7 +125,7 @@ bool GameWindow::setField(int x, int y, bool mState,bool cState, bool fState)
 
 bool GameWindow::hasMine(int x, int y) const
 {
-	Field *f = getFromBoard(x,y);
+	Field *f = this->board.get(x,y);
 
 	if(f == nullptr)
 		return 0;
@@ -184,11 +152,11 @@ void GameWindow::display() const
 {
 	Field *f;
 	int minesCount;
-	for(int j = 0; j < this->boardHeight; j++)
+	for(int j = 0; j < this->board.height; j++)
 	{
-		for(int i = 0; i < this->boardWidth; i++)
+		for(int i = 0; i < this->board.width; i++)
 		{
-			f = this->getFromBoard(i,j);
+			f = this->board.get(i,j);
 			minesCount = this->countMines(i,j);
 			putchar('[');
 
@@ -218,7 +186,7 @@ void GameWindow::display() const
 
 bool GameWindow::reveal(int x, int y)
 {
-	Field *f = getFromBoard(x, y);
+	Field *f = this->board.get(x, y);
 
 	if(f == nullptr)
 		return false;
@@ -248,7 +216,7 @@ bool GameWindow::reveal(int x, int y)
 
 bool GameWindow::revealUnflagged(int x, int y)
 {
-	Field *f = getFromBoard(x, y);
+	Field *f = this->board.get(x, y);
 	
 	if(f == nullptr)
 		return false;
@@ -286,11 +254,11 @@ GameWindow::initStartGame(int minesCount)
 int GameWindow::getMinesNumber() const
 {
 	auto ret = 0;
-	for(int i = 0; i < this->boardHeight; i++)
+	for(int i = 0; i < this->board.height; i++)
 	{
-		for(int j = 0; j < this->boardWidth; j++)
+		for(int j = 0; j < this->board.width; j++)
 		{
-			if(this->getFromBoard(j,i)->isMined())
+			if(this->board.get(j,i)->isMined())
 				ret++;
 		}
 	}
@@ -332,7 +300,7 @@ int GameWindow::loadFonts(const std::string &fontname)
 
 void GameWindow::flagButton(int xcoord, int ycoord)
 {
-	Field *f = getFromBoard(xcoord, ycoord);
+	Field *f = this->board.get(xcoord, ycoord);
 	
 	if(f == nullptr)
 		return;
@@ -351,8 +319,8 @@ void GameWindow::randomPlay()
 {
 	while(!this->isGameOver())
 	{
-		int x = int(this->randomGen() % this->boardWidth);
-		int y = int(this->randomGen() % this->boardHeight);
+		int x = int(this->randomGen() % this->board.width);
+		int y = int(this->randomGen() % this->board.height);
 
 		sleep(1);
 		
@@ -363,7 +331,7 @@ void GameWindow::randomPlay()
 
 void GameWindow::drawBoardButtons(sf::RenderWindow &wnd)
 {
-	std::vector<sf::RectangleShape> gridButtons(this->boardWidth*this->boardHeight,
+	std::vector<sf::RectangleShape> gridButtons(this->board.width*this->board.height,
 			sf::RectangleShape(sf::Vector2f(this->cellWidth-2, this->cellHeight-2)));
 	
 	Field *field;
@@ -371,15 +339,15 @@ void GameWindow::drawBoardButtons(sf::RenderWindow &wnd)
 	int gridOffset = 0;
 	int minesCount = 0;
 
-	for(int i=this->boardHeight-1; i>=0; --i)
+	for(int i=this->board.height-1; i>=0; --i)
 	{
-		for(int j=0; j<this->boardWidth; ++j)
+		for(int j=0; j<this->board.width; ++j)
 		{
-			gridButtons[(i*this->boardWidth)+j].setPosition(
+			gridButtons[(i*this->board.width)+j].setPosition(
 					j*this->cellWidth+this->boardScreenXoffset+1,
 					i*this->cellHeight+this->boardScreenYoffset+1);
-			field = getFromBoard(j,i);
-			gridOffset = (i*this->boardWidth)+j;
+			field = this->board.get(j,i);
+			gridOffset = (i*this->board.width)+j;
 			if(field->isCovered())
 			{
 				if(field->isFlagged())
@@ -425,13 +393,13 @@ void GameWindow::drawHorizontalGrid(sf::RenderWindow &wnd)
 		clr.b = 0;
 	}
 
-	for (int x=0; x<=this->boardHeight; x++)
+	for (int x=0; x<=this->board.height; x++)
 	{
 		xpoint = boardScreenXoffset;
 		ypoint = boardScreenYoffset+(x*this->cellHeight);
 		hLines.append(sf::Vertex(sf::Vector2f(xpoint, ypoint),clr)); // początek
 
-		xpoint = boardScreenXoffset+(this->boardWidth*this->cellWidth);
+		xpoint = boardScreenXoffset+(this->board.width*this->cellWidth);
 		hLines.append(sf::Vertex(sf::Vector2f(xpoint, ypoint),clr)); // koniec
 	};
 
@@ -458,13 +426,13 @@ void GameWindow::drawVerticalGrid(sf::RenderWindow &wnd)
 		clr.b = 0;
 	}
 
-	for (int x=0; x<=this->boardWidth; x++)
+	for (int x=0; x<=this->board.width; x++)
 	{
 		xpoint = boardScreenXoffset+(x*this->cellWidth);
 		ypoint = boardScreenYoffset;
 		vLines.append(sf::Vertex(sf::Vector2f(xpoint, ypoint),clr)); // początek
 
-		ypoint = boardScreenYoffset+(this->boardHeight*this->cellHeight);
+		ypoint = boardScreenYoffset+(this->board.height*this->cellHeight);
 		vLines.append(sf::Vertex(sf::Vector2f(xpoint, ypoint),clr)); // koniec
 	};
 

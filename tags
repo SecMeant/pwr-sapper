@@ -1,0 +1,94 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+EndGameState	GameWindow.hpp	/^	enum EndGameState {restart, norestart};$/;"	g	class:GameWindow
+FIELD_H	Field.hpp	2;"	d
+Field	Field.hpp	/^	Field(): mineState(0), flagState(0), coverState(1){}$/;"	f	class:Field
+Field	Field.hpp	/^	Field(bool ms, bool fs, bool cs)$/;"	f	class:Field
+Field	Field.hpp	/^class Field$/;"	c
+GAMEWINDOW_H	GameWindow.hpp	2;"	d
+GameState	GameWindow.hpp	/^	enum GameState {pending, lose, win};$/;"	g	class:GameWindow
+GameType	GameWindow.hpp	/^	enum GameType {user, random, console};$/;"	g	class:GameWindow
+GameWindow	GameWindow.cc	/^GameWindow::GameWindow(int width, int height)$/;"	f	class:GameWindow
+GameWindow	GameWindow.hpp	/^class GameWindow$/;"	c
+appname	Makefile	/^appname=game$/;"	m
+assetsPath	GameWindow.hpp	/^	const std::string assetsPath;$/;"	m	class:GameWindow
+board	GameWindow.hpp	/^	Field *board;$/;"	m	class:GameWindow
+boardHeight	GameWindow.hpp	/^	int boardHeight;$/;"	m	class:GameWindow
+boardScreenXoffset	GameWindow.hpp	/^	static constexpr float boardScreenXoffset = 75.0;$/;"	m	class:GameWindow
+boardScreenYoffset	GameWindow.hpp	/^	static constexpr float boardScreenYoffset = 75.0;$/;"	m	class:GameWindow
+boardWidth	GameWindow.hpp	/^	int boardWidth;$/;"	m	class:GameWindow
+buttonsToReveal	GameWindow.hpp	/^	int buttonsToReveal;$/;"	m	class:GameWindow
+cellHeight	GameWindow.hpp	/^	static constexpr float cellHeight = 35.0;$/;"	m	class:GameWindow
+cellWidth	GameWindow.hpp	/^	static constexpr float cellWidth = 35.0;$/;"	m	class:GameWindow
+cflags	Makefile	/^cflags=-std=c++11$/;"	m
+console	GameWindow.hpp	/^	enum GameType {user, random, console};$/;"	e	enum:GameWindow::GameType
+countMines	GameWindow.cc	/^int GameWindow::countMines(int x, int y) const$/;"	f	class:GameWindow
+coverState	Field.hpp	/^	bool coverState;$/;"	m	class:Field
+debug_display	GameWindow.cc	/^void GameWindow::debug_display() const$/;"	f	class:GameWindow
+defaultFont	GameWindow.hpp	/^constexpr const char * defaultFont $/;"	v
+deployMines	GameWindow.cc	/^void GameWindow::deployMines(int n, bool random)$/;"	f	class:GameWindow
+display	GameWindow.cc	/^void GameWindow::display() const$/;"	f	class:GameWindow
+drawBoard	GameWindow.cc	/^void GameWindow::drawBoard(sf::RenderWindow &wnd)$/;"	f	class:GameWindow
+drawBoardButtons	GameWindow.cc	/^void GameWindow::drawBoardButtons(sf::RenderWindow &wnd)$/;"	f	class:GameWindow
+drawGameStateMsg	GameWindow.cc	/^void GameWindow::drawGameStateMsg$/;"	f	class:GameWindow
+drawHorizontalGrid	GameWindow.cc	/^void GameWindow::drawHorizontalGrid(sf::RenderWindow &wnd)$/;"	f	class:GameWindow
+drawRestartButton	GameWindow.cc	/^void GameWindow::drawRestartButton$/;"	f	class:GameWindow
+drawVerticalGrid	GameWindow.cc	/^void GameWindow::drawVerticalGrid(sf::RenderWindow &wnd)$/;"	f	class:GameWindow
+flagButton	GameWindow.cc	/^void GameWindow::flagButton(int xcoord, int ycoord)$/;"	f	class:GameWindow
+flagState	Field.hpp	/^	bool flagState;$/;"	m	class:Field
+flagTexture	GameWindow.hpp	/^	sf::Texture flagTexture;$/;"	m	class:GameWindow
+gameState	GameWindow.hpp	/^	GameState gameState;$/;"	m	class:GameWindow
+gameStateMsg	GameWindow.hpp	/^	sf::Text gameStateMsg;$/;"	m	class:GameWindow
+gameStateMsgFontSize	GameWindow.hpp	/^constexpr int gameStateMsgFontSize = 36;$/;"	v
+getFromBoard	GameWindow.cc	/^Field * GameWindow::getFromBoard(int x, int y) const$/;"	f	class:GameWindow
+getGameState	GameWindow.cc	/^GameWindow::GameState GameWindow::getGameState()$/;"	f	class:GameWindow
+getMinesNumber	GameWindow.cc	/^int GameWindow::getMinesNumber() const$/;"	f	class:GameWindow
+handleGameOver	GameWindow.cc	/^void GameWindow::handleGameOver(sf::RenderWindow &wnd)$/;"	f	class:GameWindow
+handleRestart	GameWindow.cc	/^void GameWindow::handleRestart(sf::RenderWindow &wnd)$/;"	f	class:GameWindow
+hasMine	GameWindow.cc	/^bool GameWindow::hasMine(int x, int y) const$/;"	f	class:GameWindow
+info	Field.cc	/^void Field::info() const$/;"	f	class:Field
+initStartGame	GameWindow.cc	/^GameWindow::initStartGame(int minesCount)$/;"	f	class:GameWindow
+isCovered	Field.cc	/^bool Field::isCovered() const {return this->coverState;}$/;"	f	class:Field
+isFlagged	Field.cc	/^bool Field::isFlagged() const {return this->flagState;}$/;"	f	class:Field
+isGameOver	GameWindow.cc	/^bool GameWindow::isGameOver()$/;"	f	class:GameWindow
+isMined	Field.cc	/^bool Field::isMined() const {return this->mineState;}$/;"	f	class:Field
+loadAssets	GameWindow.cc	/^int GameWindow::loadAssets()$/;"	f	class:GameWindow
+loadFonts	GameWindow.cc	/^int GameWindow::loadFonts(const std::string &fontname)$/;"	f	class:GameWindow
+lose	GameWindow.hpp	/^	enum GameState {pending, lose, win};$/;"	e	enum:GameWindow::GameState
+main	main.cc	/^int main(void)$/;"	f
+mainFont	GameWindow.hpp	/^	sf::Font mainFont;$/;"	m	class:GameWindow
+mineState	Field.hpp	/^	bool mineState;$/;"	m	class:Field
+norestart	GameWindow.hpp	/^	enum EndGameState {restart, norestart};$/;"	e	enum:GameWindow::EndGameState
+numberTextures	GameWindow.hpp	/^	std::array<sf::Texture, 9> numberTextures;$/;"	m	class:GameWindow
+pending	GameWindow.hpp	/^	enum GameState {pending, lose, win};$/;"	e	enum:GameWindow::GameState
+random	GameWindow.hpp	/^	enum GameType {user, random, console};$/;"	e	enum:GameWindow::GameType
+randomGen	GameWindow.hpp	/^	std::default_random_engine randomGen;$/;"	m	class:GameWindow
+randomPlay	GameWindow.cc	/^void GameWindow::randomPlay()$/;"	f	class:GameWindow
+restart	GameWindow.hpp	/^	enum EndGameState {restart, norestart};$/;"	e	enum:GameWindow::EndGameState
+restartButton	GameWindow.hpp	/^	sf::Text restartButton;$/;"	m	class:GameWindow
+restartButtonFontSize	GameWindow.hpp	/^constexpr int restartButtonFontSize = 26;$/;"	v
+restartOnEnd	GameWindow.hpp	/^	EndGameState restartOnEnd;$/;"	m	class:GameWindow
+reveal	GameWindow.cc	/^bool GameWindow::reveal(int x, int y)$/;"	f	class:GameWindow
+revealUnflagged	GameWindow.cc	/^bool GameWindow::revealUnflagged(int x, int y)$/;"	f	class:GameWindow
+setCoverState	Field.cc	/^void Field::setCoverState(bool st) {this->coverState = st;}$/;"	f	class:Field
+setField	GameWindow.cc	/^bool GameWindow::setField(int x, int y, bool mState,bool cState, bool fState)$/;"	f	class:GameWindow
+setFlagState	Field.cc	/^void Field::setFlagState(bool st) {this->flagState = st;}$/;"	f	class:Field
+setMineState	Field.cc	/^void Field::setMineState(bool st) {this->mineState = st;}$/;"	f	class:Field
+sfmllib	Makefile	/^sfmllib=-I C:\\SFML\\include -I C:\\SFML\\lib$/;"	m
+sfmlso	Makefile	/^sfmlso=-lsfml-graphics -lsfml-window -lsfml-system$/;"	m
+solibs	Makefile	/^solibs=-lpthread$/;"	m
+src	Makefile	/^src=main.cc Field.cc GameWindow.cc$/;"	m
+startGame	GameWindow.cc	/^void GameWindow::startGame()$/;"	f	class:GameWindow
+startGameConsole	GameWindow.cc	/^void GameWindow::startGameConsole()$/;"	f	class:GameWindow
+transformTextToWindowHeader	GameWindow.cc	/^void GameWindow::transformTextToWindowHeader(sf::Text &txt)$/;"	f	class:GameWindow
+user	GameWindow.hpp	/^	enum GameType {user, random, console};$/;"	e	enum:GameWindow::GameType
+waitForButtonClick	GameWindow.cc	/^size_t GameWindow::waitForButtonClick$/;"	f	class:GameWindow
+warningson	Makefile	/^warningson=-Wall -Wextra$/;"	m
+win	GameWindow.hpp	/^	enum GameState {pending, lose, win};$/;"	e	enum:GameWindow::GameState
+windowHeight	GameWindow.hpp	/^	int windowHeight;$/;"	m	class:GameWindow
+windowWidth	GameWindow.hpp	/^	int windowWidth;$/;"	m	class:GameWindow
+~GameWindow	GameWindow.cc	/^GameWindow::~GameWindow()$/;"	f	class:GameWindow
