@@ -2,7 +2,7 @@
 #include "GameWindow.hpp"
 
 GameWindow::GameWindow(int width, int height)
-:board(width, height), buttonsToReveal(0), restartOnEnd(norestart),
+:board(width, height), restartOnEnd(norestart),
  gameState(pending),
  randomGen(time(NULL)), assetsPath("./assets/")
 {
@@ -52,8 +52,8 @@ void GameWindow::deployMines(int n, bool random)
 	{
 
 		// Calculate buttons to reveal
-		this->buttonsToReveal = this->board.width*this->board.height;
-		this->buttonsToReveal -= n;
+		this->board.buttonsToReveal = this->board.width*this->board.height;
+		this->board.buttonsToReveal -= n;
 
 		for(int i = 0; i < n; i++)
 		{
@@ -92,9 +92,9 @@ void GameWindow::deployMines(int n, bool random)
 	}
 
 	// Calculate buttons to reveal
-	this->buttonsToReveal = this->board.width*this->board.height;
-	this->buttonsToReveal -= this->getMinesNumber();
-	printf("%i",this->buttonsToReveal);
+	this->board.buttonsToReveal = this->board.width*this->board.height;
+	this->board.buttonsToReveal -= this->getMinesNumber();
+	printf("%i",this->board.buttonsToReveal);
 }
 
 void GameWindow::debug_display() const
@@ -109,45 +109,6 @@ void GameWindow::debug_display() const
 	}
 }
 
-bool GameWindow::setField(int x, int y, bool mState,bool cState, bool fState)
-{
-	Field *f = this->board.get(x,y);
-
-	if(f == nullptr)
-		return 0;
-
-	f->setMineState(mState);
-	f->setCoverState(cState);
-	f->setFlagState(fState);
-
-	return 1;
-}
-
-bool GameWindow::hasMine(int x, int y) const
-{
-	Field *f = this->board.get(x,y);
-
-	if(f == nullptr)
-		return 0;
-	return f->isMined();
-}
-
-int GameWindow::countMines(int x, int y) const
-{
-	int ret = 0;
-	ret += hasMine(x-1,y+1); // top left
-	ret += hasMine(x,y+1);	 // top
-	ret += hasMine(x+1,y+1); // top right
-
-	ret += hasMine(x-1,y);	 // left
-	ret += hasMine(x+1,y);	 // right
-
-	ret += hasMine(x-1,y-1); // bottom left
-	ret += hasMine(x,y-1);	 // bottom
-	ret += hasMine(x+1,y-1); // bottom right
-	return ret;
-}
-
 void GameWindow::display() const
 {
 	Field *f;
@@ -157,7 +118,7 @@ void GameWindow::display() const
 		for(int i = 0; i < this->board.width; i++)
 		{
 			f = this->board.get(i,j);
-			minesCount = this->countMines(i,j);
+			minesCount = this->board.countMines(i,j);
 			putchar('[');
 
 			if(f->isCovered())
@@ -184,49 +145,6 @@ void GameWindow::display() const
 	}
 }
 
-bool GameWindow::reveal(int x, int y)
-{
-	Field *f = this->board.get(x, y);
-
-	if(f == nullptr)
-		return false;
-
-	if(!f->isCovered())
-		return false;
-
-	f->setCoverState(false);
-
-	this->buttonsToReveal--;
-
-	if(this->buttonsToReveal == 0)
-	{
-		this->gameState = win; // WIN !
-		this->gameStateMsg.setString("You win!");
-	}
-
-	if(f->isMined())
-	{
-		this->gameState = lose; // lose
-		this->gameStateMsg.setString("You have lost!");
-		this->gameStateMsg.setColor({125,0,0});
-	}
-
-	return true;
-}
-
-bool GameWindow::revealUnflagged(int x, int y)
-{
-	Field *f = this->board.get(x, y);
-	
-	if(f == nullptr)
-		return false;
-
-	if(f->isFlagged())
-		return false;
-
-	return this->reveal(x,y);
-}
-
 bool GameWindow::isGameOver()
 {
 	if(this->gameState == pending)
@@ -249,6 +167,28 @@ GameWindow::initStartGame(int minesCount)
 	// False otherwise
 	// this->startGame sets appropriate value
 	return this->restartOnEnd;
+}
+
+void GameWindow::handleReveal(int x, int y)
+{
+	if(this->board.revealUnflagged(x,y))
+	{
+		this->board.buttonsToReveal--;
+
+		if(this->board.buttonsToReveal == 0)
+		{
+			this->gameState = win; // WIN !
+			this->gameStateMsg.setString("You win!");
+		}
+
+		if(this->board.get(x,y)->isMined())
+		{
+			this->gameState = lose; // lose
+			this->gameStateMsg.setString("You have lost!");
+			this->gameStateMsg.setColor({125,0,0});
+		}
+
+	}
 }
 
 int GameWindow::getMinesNumber() const
@@ -324,7 +264,7 @@ void GameWindow::randomPlay()
 
 		sleep(1);
 		
-		this->reveal(x,y);
+		this->handleReveal(x,y);
 	}
 	puts("GAMEOVER");
 }
@@ -364,7 +304,7 @@ void GameWindow::drawBoardButtons(sf::RenderWindow &wnd)
 				gridButtons[gridOffset].setFillColor(sf::Color::Red);
 				continue;
 			}
-			minesCount = this->countMines(j,i);
+			minesCount = this->board.countMines(j,i);
 			gridButtons[gridOffset].setTexture(&this->numberTextures.at(minesCount));
 		}
 	}
@@ -564,7 +504,7 @@ void GameWindow::startGame()
 
 				if (event.mouseButton.button == sf::Mouse::Left)
 				{
-					this->revealUnflagged(xpressed, ypressed);
+					this->handleReveal(xpressed, ypressed);
 				}
 
 				else if(event.mouseButton.button == sf::Mouse::Right)
@@ -611,7 +551,26 @@ void GameWindow::startGameConsole()
 			continue;
 		}
 
-		this->revealUnflagged(x,y);
+		if(this->board.revealUnflagged(x,y))
+		{
+			this->board.buttonsToReveal--;
+
+
+			if(this->board.buttonsToReveal == 0)
+			{
+				this->gameState = win; // WIN !
+				this->gameStateMsg.setString("You win!");
+			}
+
+			if(this->board.get(x,y)->isMined())
+			{
+				this->gameState = lose; // lose
+				this->gameStateMsg.setString("You have lost!");
+				this->gameStateMsg.setColor({125,0,0});
+			}
+
+		}
+
 		this->display();
 	}
 	puts("GAMEOVER!");

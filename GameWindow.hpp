@@ -45,9 +45,6 @@ private:
 	int windowWidth;
 	int windowHeight;
 
-	// Holds value of buttons that must be revealed to win
-	int buttonsToReveal;
-
 	// Filled with appropriate value by this->startGame
 	EndGameState restartOnEnd;
 
@@ -167,41 +164,22 @@ public:
 	// left and right diagonal with bom (n is ignored).
 	void deployMines(int n, bool random);
 
-	void debug_display() const;
-	void display() const;
-	
-	// Changes field described by given XY coords to given values
-	bool setField(int x, int y, bool mState, bool cState, bool fState);
-
 	// Returns true if game is over
 	// False otherwise
 	bool isGameOver();
 
 	inline GameWindow::GameState getGameState();
 
-	// Returns true if field described by XY coords
-	// contains bomb or not
-	bool hasMine(int x, int y) const;
-
-	// Returns number of mines around point
-	// descibed as given XY coords
-	int countMines(int x, int y) const;
-
-	// Reveals filed descibed as given coords
-	// Returns true if successufully revelad given field
-	// False otherwise
-	bool reveal(int x, int y);
-
-	// same as reveal but first checks if button is flagged
-	// if so does not reveals
-	// Returns true if revealed button
-	// false otherwise
-	bool revealUnflagged(int x, int y);
-
 	// Randomly deploys mines and starts game
 	// Returns when game is over.
 	// Returns wheter game should be restarted or not
 	EndGameState initStartGame(int minesCount);
+
+	// Reveals button and checks if game is won or lost
+	void handleReveal(int x, int y);
+
+	void debug_display() const;
+	void display() const;
 };
 
 #endif // GAMEWINDOW_H
