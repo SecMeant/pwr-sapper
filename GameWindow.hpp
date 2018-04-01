@@ -1,5 +1,5 @@
-#ifndef BOARD_H
-#define BOARD_H
+#ifndef GAMEWINDOW_H
+#define GAMEWINDOW_H
 
 #include "Field.hpp"
 #include <stdlib.h>
@@ -20,7 +20,7 @@ constexpr int gameStateMsgFontSize = 36;
 constexpr const char * defaultFont 
 	= "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
 
-class Board
+class GameWindow
 {
 public:
 	// pending : game is on !
@@ -61,8 +61,6 @@ private:
 	Field* getFromBoard(int x, int y) const;
 
 	GameState gameState;
-
-	std::thread *UIthread;
 
 	// Used for random play
 	std::default_random_engine randomGen;
@@ -167,10 +165,10 @@ public:
 
 	// allocates memory for fields in 
 	// size of width*height*sizeof(Field)
-	Board(int width, int height);
+	GameWindow(int width, int height);
 
 	// Deallocates mem for fields
-	~Board();
+	~GameWindow();
 
 	// If random is set, fills board with randomly
 	// placed bombs in number of n.
@@ -188,7 +186,7 @@ public:
 	// False otherwise
 	bool isGameOver();
 
-	inline Board::GameState getGameState();
+	inline GameWindow::GameState getGameState();
 
 	// Returns true if field described by XY coords
 	// contains bomb or not
@@ -211,9 +209,8 @@ public:
 
 	// Randomly deploys mines and starts game
 	// Returns when game is over.
-	// Returns true if game should be restarted
-	// or false otherwise
-	EndGameState initStartGame(Board::GameType gt, int minesCount);
+	// Returns wheter game should be restarted or not
+	EndGameState initStartGame(int minesCount);
 };
 
-#endif
+#endif // GAMEWINDOW_H

@@ -1,12 +1,12 @@
-#include "Board.hpp"
+#include "GameWindow.hpp"
 
 int main(void)
 {
-	Board::EndGameState r = Board::EndGameState::restart;
-	while(r == Board::EndGameState::restart)
+	GameWindow::EndGameState r = GameWindow::EndGameState::restart;
+	while(r == GameWindow::EndGameState::restart)
 	{
-		Board mainBoard(4,4);
-		r = mainBoard.initStartGame(Board::GameType::user, 4);
+		GameWindow game(4,4);
+		r = game.initStartGame(4);
 	}
 
 	return 0;

@@ -3,7 +3,7 @@ warningson=-Wall -Wextra
 sfmlso=-lsfml-graphics -lsfml-window -lsfml-system
 sfmllib=-I C:\SFML\include -I C:\SFML\lib
 solibs=-lpthread
-src=main.cc Field.cc Board.cc
+src=main.cc Field.cc GameWindow.cc
 appname=game
 
 all linux:

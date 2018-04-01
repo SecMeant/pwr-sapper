@@ -1,9 +1,9 @@
 #include <sstream>
-#include "Board.hpp"
+#include "GameWindow.hpp"
 
-Board::Board(int width, int height)
+GameWindow::GameWindow(int width, int height)
 :buttonsToReveal(0), restartOnEnd(norestart), gameState(pending),
- UIthread(nullptr), randomGen(time(NULL)), assetsPath("./assets/")
+ randomGen(time(NULL)), assetsPath("./assets/")
 {
 	if(width <= 0)
 	{
@@ -54,15 +54,14 @@ Board::Board(int width, int height)
 		
 		this->gameStateMsg.setPosition(xoffRB,yoffRB);
 	}
-	
 }
 
-Board::~Board()
+GameWindow::~GameWindow()
 {
 	delete [] this->board;
 }
 
-void Board::deployMines(int n, bool random)
+void GameWindow::deployMines(int n, bool random)
 {
 	Field *f;
 
@@ -115,7 +114,7 @@ void Board::deployMines(int n, bool random)
 	printf("%i",this->buttonsToReveal);
 }
 
-void Board::debug_display() const
+void GameWindow::debug_display() const
 {
 	for(int j = 0; j < this->boardHeight; j++)
 	{
@@ -127,7 +126,7 @@ void Board::debug_display() const
 	}
 }
 
-Field * Board::getFromBoard(int x, int y) const
+Field * GameWindow::getFromBoard(int x, int y) const
 {
 	if(x >= this->boardWidth || x < 0)
 	{
@@ -142,7 +141,7 @@ Field * Board::getFromBoard(int x, int y) const
 	return this->board + (y*this->boardWidth) + x;
 }
 
-bool Board::setField(int x, int y, bool mState,bool cState, bool fState)
+bool GameWindow::setField(int x, int y, bool mState,bool cState, bool fState)
 {
 	Field *f = this->getFromBoard(x,y);
 
@@ -156,7 +155,7 @@ bool Board::setField(int x, int y, bool mState,bool cState, bool fState)
 	return 1;
 }
 
-bool Board::hasMine(int x, int y) const
+bool GameWindow::hasMine(int x, int y) const
 {
 	Field *f = getFromBoard(x,y);
 
@@ -165,7 +164,7 @@ bool Board::hasMine(int x, int y) const
 	return f->isMined();
 }
 
-int Board::countMines(int x, int y) const
+int GameWindow::countMines(int x, int y) const
 {
 	int ret = 0;
 	ret += hasMine(x-1,y+1); // top left
@@ -181,7 +180,7 @@ int Board::countMines(int x, int y) const
 	return ret;
 }
 
-void Board::display() const
+void GameWindow::display() const
 {
 	Field *f;
 	int minesCount;
@@ -217,7 +216,7 @@ void Board::display() const
 	}
 }
 
-bool Board::reveal(int x, int y)
+bool GameWindow::reveal(int x, int y)
 {
 	Field *f = getFromBoard(x, y);
 
@@ -247,7 +246,7 @@ bool Board::reveal(int x, int y)
 	return true;
 }
 
-bool Board::revealUnflagged(int x, int y)
+bool GameWindow::revealUnflagged(int x, int y)
 {
 	Field *f = getFromBoard(x, y);
 	
@@ -260,39 +259,22 @@ bool Board::revealUnflagged(int x, int y)
 	return this->reveal(x,y);
 }
 
-bool Board::isGameOver()
+bool GameWindow::isGameOver()
 {
 	if(this->gameState == pending)
 		return false;
 	return true;
 }
 
-Board::GameState Board::getGameState()
+GameWindow::GameState GameWindow::getGameState()
 {
 	return this->gameState;
 }
 
-Board::EndGameState
-Board::initStartGame(Board::GameType gt, int minesCount)
+GameWindow::EndGameState
+GameWindow::initStartGame(int minesCount)
 {
 	this->deployMines(minesCount,true);
-
-	switch(gt)
-	{
-		case GameType::user:
-			// just this->startGame
-			break;
-		case GameType::random:
-			this->UIthread = new std::thread(&Board::randomPlay,this);
-			break;
-		case GameType::console:
-			this->UIthread = new std::thread(&Board::startGameConsole,this);
-			break;
-		default:
-			puts("Error! Wrong GameType.");
-			return Board::EndGameState::norestart;
-	}
-
 	this->startGame();
 
 	// True if game should be restarted after close
@@ -301,7 +283,7 @@ Board::initStartGame(Board::GameType gt, int minesCount)
 	return this->restartOnEnd;
 }
 
-int Board::getMinesNumber() const
+int GameWindow::getMinesNumber() const
 {
 	auto ret = 0;
 	for(int i = 0; i < this->boardHeight; i++)
@@ -315,7 +297,7 @@ int Board::getMinesNumber() const
 	return ret;
 }
 
-int Board::loadAssets()
+int GameWindow::loadAssets()
 {
 	int ret = 0;
 	char idx = '0';
@@ -335,7 +317,7 @@ int Board::loadAssets()
 	return ret;
 }
 
-int Board::loadFonts(const std::string &fontname)
+int GameWindow::loadFonts(const std::string &fontname)
 {
 	fprintf(stderr, "Loading fonts . . . \n");
 	
@@ -348,7 +330,7 @@ int Board::loadFonts(const std::string &fontname)
 	return 0;
 }
 
-void Board::flagButton(int xcoord, int ycoord)
+void GameWindow::flagButton(int xcoord, int ycoord)
 {
 	Field *f = getFromBoard(xcoord, ycoord);
 	
@@ -358,14 +340,14 @@ void Board::flagButton(int xcoord, int ycoord)
 	f->setFlagState(!f->isFlagged());
 }
 
-void Board::drawBoard(sf::RenderWindow &wnd)
+void GameWindow::drawBoard(sf::RenderWindow &wnd)
 {
 	this->drawHorizontalGrid(wnd);
 	this->drawVerticalGrid(wnd);
 	this->drawBoardButtons(wnd);
 }
 
-void Board::randomPlay()
+void GameWindow::randomPlay()
 {
 	while(!this->isGameOver())
 	{
@@ -379,7 +361,7 @@ void Board::randomPlay()
 	puts("GAMEOVER");
 }
 
-void Board::drawBoardButtons(sf::RenderWindow &wnd)
+void GameWindow::drawBoardButtons(sf::RenderWindow &wnd)
 {
 	std::vector<sf::RectangleShape> gridButtons(this->boardWidth*this->boardHeight,
 			sf::RectangleShape(sf::Vector2f(this->cellWidth-2, this->cellHeight-2)));
@@ -423,7 +405,7 @@ void Board::drawBoardButtons(sf::RenderWindow &wnd)
 		wnd.draw(btn);
 }
 
-void Board::drawHorizontalGrid(sf::RenderWindow &wnd)
+void GameWindow::drawHorizontalGrid(sf::RenderWindow &wnd)
 {
 	sf::VertexArray hLines(sf::Lines);
 	
@@ -456,7 +438,7 @@ void Board::drawHorizontalGrid(sf::RenderWindow &wnd)
 	wnd.draw(hLines);
 }
 
-void Board::drawVerticalGrid(sf::RenderWindow &wnd)
+void GameWindow::drawVerticalGrid(sf::RenderWindow &wnd)
 {
 	sf::VertexArray vLines(sf::Lines);
 	
@@ -489,20 +471,20 @@ void Board::drawVerticalGrid(sf::RenderWindow &wnd)
 	wnd.draw(vLines);
 }
 
-void Board::drawRestartButton
+void GameWindow::drawRestartButton
 (sf::RenderWindow &wnd)
 {
 	wnd.draw(this->restartButton);
 }
 
-void Board::drawGameStateMsg
+void GameWindow::drawGameStateMsg
 (sf::RenderWindow &wnd)
 {
 	this->transformTextToWindowHeader(this->gameStateMsg);
 	wnd.draw(this->gameStateMsg);
 }
 
-void Board::transformTextToWindowHeader(sf::Text &txt)
+void GameWindow::transformTextToWindowHeader(sf::Text &txt)
 {
 	txt.setPosition(
 		(this->windowWidth-txt.getGlobalBounds().width)/2,
@@ -517,7 +499,7 @@ void Board::transformTextToWindowHeader(sf::Text &txt)
 	}
 }
 
-size_t Board::waitForButtonClick
+size_t GameWindow::waitForButtonClick
 (const std::vector<sf::Text> &btns, sf::RenderWindow &wnd)
 {
 	sf::Event event;
@@ -545,7 +527,7 @@ size_t Board::waitForButtonClick
 	return SIZE_MAX;
 }
 
-size_t Board::waitForButtonClick
+size_t GameWindow::waitForButtonClick
 (const sf::Text &btn, sf::RenderWindow &wnd)
 {
 	sf::Event event;
@@ -568,7 +550,7 @@ size_t Board::waitForButtonClick
 	return SIZE_MAX; // window killed
 }
 
-void Board::startGame()
+void GameWindow::startGame()
 {
 	sf::RenderWindow 
 		window(
@@ -632,23 +614,23 @@ void Board::startGame()
 	}
 }
 
-void Board::handleGameOver(sf::RenderWindow &wnd)
+void GameWindow::handleGameOver(sf::RenderWindow &wnd)
 {
 	this->drawGameStateMsg(wnd);
 	this->handleRestart(wnd);
 }
 
-void Board::handleRestart(sf::RenderWindow &wnd)
+void GameWindow::handleRestart(sf::RenderWindow &wnd)
 {
 	this->drawRestartButton(wnd);
 	wnd.display();
 
-	this->restartOnEnd = Board::EndGameState::restart;
+	this->restartOnEnd = GameWindow::EndGameState::restart;
 	if(this->waitForButtonClick(this->restartButton, wnd))
-		this->restartOnEnd = Board::EndGameState::norestart;
+		this->restartOnEnd = GameWindow::EndGameState::norestart;
 }
 
-void Board::startGameConsole()
+void GameWindow::startGameConsole()
 {
 	int x,y;
 	while(!this->isGameOver())
