@@ -2,9 +2,11 @@
 #include "GameWindow.hpp"
 
 GameWindow::GameWindow(int width, int height)
-:board(width, height), restartOnEnd(norestart),
- gameState(pending),
- randomGen(time(NULL)), assetsPath("./assets/")
+:board(width, height),
+ restartOnEnd(Logic::EndGameState::norestart),
+ gameState(Logic::GameState::pending),
+ randomGen(time(NULL)),
+ assetsPath("./assets/")
 {
 	this->windowWidth = int(boardScreenXoffset*2 + width*cellWidth);
 	this->windowHeight = int(boardScreenYoffset*2 + height*cellHeight);
@@ -147,17 +149,17 @@ void GameWindow::display() const
 
 bool GameWindow::isGameOver()
 {
-	if(this->gameState == pending)
+	if(this->gameState == Logic::GameState::pending)
 		return false;
 	return true;
 }
 
-GameWindow::GameState GameWindow::getGameState()
+Logic::GameState GameWindow::getGameState()
 {
 	return this->gameState;
 }
 
-GameWindow::EndGameState
+Logic::EndGameState
 GameWindow::initStartGame(int minesCount)
 {
 	this->deployMines(minesCount,true);
@@ -177,13 +179,13 @@ void GameWindow::handleReveal(int x, int y)
 
 		if(this->board.buttonsToReveal == 0)
 		{
-			this->gameState = win; // WIN !
+			this->gameState = Logic::GameState::win; // WIN !
 			this->gameStateMsg.setString("You win!");
 		}
 
 		if(this->board.get(x,y)->isMined())
 		{
-			this->gameState = lose; // lose
+			this->gameState = Logic::GameState::lose; // lose
 			this->gameStateMsg.setString("You have lost!");
 			this->gameStateMsg.setFillColor({125,0,0});
 		}
@@ -321,12 +323,12 @@ void GameWindow::drawHorizontalGrid(sf::RenderWindow &wnd)
 	register float ypoint;
 
 	sf::Color clr(255,255,255);
-	if(this->gameState == lose)
+	if(this->gameState == Logic::GameState::lose)
 	{
 		clr.g = 0;
 		clr.b = 0;
 	}
-	else if(this->gameState == win)
+	else if(this->gameState == Logic::GameState::win)
 	{
 		clr.r = 0;
 		clr.g = 255;
@@ -354,12 +356,12 @@ void GameWindow::drawVerticalGrid(sf::RenderWindow &wnd)
 	register float ypoint;
 	
 	sf::Color clr(255,255,255);
-	if(this->gameState == lose)
+	if(this->gameState == Logic::GameState::lose)
 	{
 		clr.g = 0;
 		clr.b = 0;
 	}
-	else if(this->gameState == win)
+	else if(this->gameState == Logic::GameState::win)
 	{
 		clr.r = 0;
 		clr.g = 255;
@@ -533,9 +535,9 @@ void GameWindow::handleRestart(sf::RenderWindow &wnd)
 	this->drawRestartButton(wnd);
 	wnd.display();
 
-	this->restartOnEnd = GameWindow::EndGameState::restart;
+	this->restartOnEnd = Logic::EndGameState::restart;
 	if(this->waitForButtonClick(this->restartButton, wnd))
-		this->restartOnEnd = GameWindow::EndGameState::norestart;
+		this->restartOnEnd = Logic::EndGameState::norestart;
 }
 
 void GameWindow::startGameConsole()
@@ -558,13 +560,13 @@ void GameWindow::startGameConsole()
 
 			if(this->board.buttonsToReveal == 0)
 			{
-				this->gameState = win; // WIN !
+				this->gameState = Logic::GameState::win; // WIN !
 				this->gameStateMsg.setString("You win!");
 			}
 
 			if(this->board.get(x,y)->isMined())
 			{
-				this->gameState = lose; // lose
+				this->gameState = Logic::GameState::lose; // lose
 				this->gameStateMsg.setString("You have lost!");
 				this->gameStateMsg.setFillColor({125,0,0});
 			}

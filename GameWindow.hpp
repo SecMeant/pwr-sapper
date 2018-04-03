@@ -2,6 +2,7 @@
 #define GAMEWINDOW_H
 
 #include "Board.hpp"
+#include "Logic.hpp"
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -23,21 +24,6 @@ constexpr const char * defaultFont
 
 class GameWindow
 {
-public:
-	// pending : game is on !
-	// gameover : user lost
-	// win : user won
-	enum GameState {pending, lose, win};
-
-	// Used to indicate wheter game should be 
-	// restarted when current closes or not
-	enum EndGameState {restart, norestart};
-
-	// user : user uses gui to play
-	// random : computer reveal buttons randomly
-	// console : user uses console to play
-	enum GameType {user, random, console};
-
 private:
 	Board board;
 
@@ -46,9 +32,9 @@ private:
 	int windowHeight;
 
 	// Filled with appropriate value by this->startGame
-	EndGameState restartOnEnd;
+	Logic::EndGameState restartOnEnd;
 
-	GameState gameState;
+	Logic::GameState gameState;
 
 	// Used for random play
 	std::default_random_engine randomGen;
@@ -151,6 +137,9 @@ public:
 	static constexpr float cellWidth = 35.0;
 	static constexpr float cellHeight = 35.0;
 
+	// Handles game logic
+	Logic logic;
+
 	// allocates memory for fields in 
 	// size of width*height*sizeof(Field)
 	GameWindow(int width, int height);
@@ -168,12 +157,12 @@ public:
 	// False otherwise
 	bool isGameOver();
 
-	inline GameWindow::GameState getGameState();
+	inline Logic::GameState getGameState();
 
 	// Randomly deploys mines and starts game
 	// Returns when game is over.
 	// Returns wheter game should be restarted or not
-	EndGameState initStartGame(int minesCount);
+	Logic::EndGameState initStartGame(int minesCount);
 
 	// Reveals button and checks if game is won or lost
 	void handleReveal(int x, int y);

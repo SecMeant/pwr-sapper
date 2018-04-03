@@ -1,9 +1,9 @@
-#include "GameWindow.hpp"
+#include "Sapper.hpp"
 
 int main(void)
 {
-	GameWindow::EndGameState r = GameWindow::EndGameState::restart;
-	while(r == GameWindow::EndGameState::restart)
+	Logic::EndGameState r = Logic::EndGameState::restart;
+	while(r == Logic::EndGameState::restart)
 	{
 		GameWindow game(4,4);
 		r = game.initStartGame(4);
