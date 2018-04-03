@@ -16,7 +16,7 @@ GameWindow::GameWindow(int width, int height)
 		this->restartButton.setString("Restart");
 		this->restartButton.setFont(mainFont);
 		this->restartButton.setCharacterSize(restartButtonFontSize);
-		this->restartButton.setColor({255,0,255});
+		this->restartButton.setFillColor({255,0,255});
 		
 		int restartButtonWidth = this->restartButton.getGlobalBounds().width;
 		int restartButtonHeight = this->restartButton.getGlobalBounds().height;
@@ -30,7 +30,7 @@ GameWindow::GameWindow(int width, int height)
 		this->gameStateMsg.setString("asdf");
 		this->gameStateMsg.setFont(mainFont);
 		this->gameStateMsg.setCharacterSize(gameStateMsgFontSize);
-		this->gameStateMsg.setColor({0,255,0});
+		this->gameStateMsg.setFillColor({0,255,0});
 
 		int gameStateMsgWidth = this->gameStateMsg.getGlobalBounds().width;
 		register int xoffRB = (this->windowWidth-gameStateMsgWidth)/2;
@@ -185,7 +185,7 @@ void GameWindow::handleReveal(int x, int y)
 		{
 			this->gameState = lose; // lose
 			this->gameStateMsg.setString("You have lost!");
-			this->gameStateMsg.setColor({125,0,0});
+			this->gameStateMsg.setFillColor({125,0,0});
 		}
 
 	}
@@ -566,7 +566,7 @@ void GameWindow::startGameConsole()
 			{
 				this->gameState = lose; // lose
 				this->gameStateMsg.setString("You have lost!");
-				this->gameStateMsg.setColor({125,0,0});
+				this->gameStateMsg.setFillColor({125,0,0});
 			}
 
 		}
