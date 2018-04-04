@@ -2,9 +2,8 @@
 #include "GameWindow.hpp"
 
 GameWindow::GameWindow(int width, int height)
-:board(width, height),
- restartOnEnd(Logic::EndGameState::norestart),
- gameState(Logic::GameState::pending),
+:logic(Logic::GameState::pending,Logic::EndGameState::norestart),
+ board(width, height),
  randomGen(time(NULL)),
  assetsPath("./assets/")
 {
@@ -44,59 +43,6 @@ GameWindow::GameWindow(int width, int height)
 
 GameWindow::~GameWindow()
 {
-}
-
-void GameWindow::deployMines(int n, bool random)
-{
-	Field *f;
-
-	if(random)
-	{
-
-		// Calculate buttons to reveal
-		this->board.buttonsToReveal = this->board.width*this->board.height;
-		this->board.buttonsToReveal -= n;
-
-		for(int i = 0; i < n; i++)
-		{
-			int xcoord = int(this->randomGen() % this->board.width);
-			int ycoord = int(this->randomGen() % this->board.height);
-
-			f = this->board.get(xcoord, ycoord);
-			// I know its slow ;]
-			if(f->isMined())
-			{
-				i--;
-				continue;
-			}
-
-			f->setMineState(true);
-		}
-		return;
-	}
-	
-	for(int i = 0, j = 0; i < this->board.width; i++, j++)
-	{
-		// Negative from bottom diagonal slope
-		f = this->board.get(this->board.width-1-i, this->board.height-1-i);
-		if(f!=nullptr)
-			f->setMineState(true);
-		
-		// Positive from bottom diagonal slope
-		f = this->board.get(i, this->board.height-1-j);
-		if(f!=nullptr)
-			f->setMineState(true);
-
-		// Top row
-		f = this->board.get(i, 0);
-		if(f!=nullptr)
-			f->setMineState(true);
-	}
-
-	// Calculate buttons to reveal
-	this->board.buttonsToReveal = this->board.width*this->board.height;
-	this->board.buttonsToReveal -= this->getMinesNumber();
-	printf("%i",this->board.buttonsToReveal);
 }
 
 void GameWindow::debug_display() const
@@ -147,64 +93,16 @@ void GameWindow::display() const
 	}
 }
 
-bool GameWindow::isGameOver()
-{
-	if(this->gameState == Logic::GameState::pending)
-		return false;
-	return true;
-}
-
-Logic::GameState GameWindow::getGameState()
-{
-	return this->gameState;
-}
-
 Logic::EndGameState
 GameWindow::initStartGame(int minesCount)
 {
-	this->deployMines(minesCount,true);
+	this->logic.deployMines(minesCount,true,this->board);
 	this->startGame();
 
 	// True if game should be restarted after close
 	// False otherwise
 	// this->startGame sets appropriate value
-	return this->restartOnEnd;
-}
-
-void GameWindow::handleReveal(int x, int y)
-{
-	if(this->board.revealUnflagged(x,y))
-	{
-		this->board.buttonsToReveal--;
-
-		if(this->board.buttonsToReveal == 0)
-		{
-			this->gameState = Logic::GameState::win; // WIN !
-			this->gameStateMsg.setString("You win!");
-		}
-
-		if(this->board.get(x,y)->isMined())
-		{
-			this->gameState = Logic::GameState::lose; // lose
-			this->gameStateMsg.setString("You have lost!");
-			this->gameStateMsg.setFillColor({125,0,0});
-		}
-
-	}
-}
-
-int GameWindow::getMinesNumber() const
-{
-	auto ret = 0;
-	for(int i = 0; i < this->board.height; i++)
-	{
-		for(int j = 0; j < this->board.width; j++)
-		{
-			if(this->board.get(j,i)->isMined())
-				ret++;
-		}
-	}
-	return ret;
+	return this->logic.restartOnEnd;
 }
 
 int GameWindow::loadAssets()
@@ -240,14 +138,17 @@ int GameWindow::loadFonts(const std::string &fontname)
 	return 0;
 }
 
-void GameWindow::flagButton(int xcoord, int ycoord)
+void GameWindow::setStateMsgToGameState()
 {
-	Field *f = this->board.get(xcoord, ycoord);
-	
-	if(f == nullptr)
-		return;
-
-	f->setFlagState(!f->isFlagged());
+	if(this->logic.gameState == Logic::GameState::win)
+		this->gameStateMsg.setString("You win!");
+	else if(this->logic.gameState == Logic::GameState::lose)
+	{
+		this->gameStateMsg.setString("You have lost!");
+		this->gameStateMsg.setFillColor({125,0,0});
+	}
+	else
+		this->gameStateMsg.setString("Error: 0xD3ADB33F");
 }
 
 void GameWindow::drawBoard(sf::RenderWindow &wnd)
@@ -259,14 +160,14 @@ void GameWindow::drawBoard(sf::RenderWindow &wnd)
 
 void GameWindow::randomPlay()
 {
-	while(!this->isGameOver())
+	while(!this->logic.isGameOver())
 	{
 		int x = int(this->randomGen() % this->board.width);
 		int y = int(this->randomGen() % this->board.height);
 
 		sleep(1);
 		
-		this->handleReveal(x,y);
+		this->logic.handleReveal(x,y,this->board);
 	}
 	puts("GAMEOVER");
 }
@@ -323,12 +224,12 @@ void GameWindow::drawHorizontalGrid(sf::RenderWindow &wnd)
 	register float ypoint;
 
 	sf::Color clr(255,255,255);
-	if(this->gameState == Logic::GameState::lose)
+	if(this->logic.gameState == Logic::GameState::lose)
 	{
 		clr.g = 0;
 		clr.b = 0;
 	}
-	else if(this->gameState == Logic::GameState::win)
+	else if(this->logic.gameState == Logic::GameState::win)
 	{
 		clr.r = 0;
 		clr.g = 255;
@@ -356,12 +257,12 @@ void GameWindow::drawVerticalGrid(sf::RenderWindow &wnd)
 	register float ypoint;
 	
 	sf::Color clr(255,255,255);
-	if(this->gameState == Logic::GameState::lose)
+	if(this->logic.gameState == Logic::GameState::lose)
 	{
 		clr.g = 0;
 		clr.b = 0;
 	}
-	else if(this->gameState == Logic::GameState::win)
+	else if(this->logic.gameState == Logic::GameState::win)
 	{
 		clr.r = 0;
 		clr.g = 255;
@@ -482,7 +383,7 @@ void GameWindow::startGame()
 			if (event.type == sf::Event::Closed)
 				window.close();
 
-			if(isGameOver())
+			if(logic.isGameOver())
 			{
 				this->handleGameOver(window);
 				return;
@@ -506,12 +407,13 @@ void GameWindow::startGame()
 
 				if (event.mouseButton.button == sf::Mouse::Left)
 				{
-					this->handleReveal(xpressed, ypressed);
+					this->logic.handleReveal
+						(xpressed, ypressed, this->board);
 				}
 
 				else if(event.mouseButton.button == sf::Mouse::Right)
 				{
-					this->flagButton(xpressed, ypressed);
+					this->logic.flagButton(xpressed, ypressed, this->board);
 				}
 			}
 		}
@@ -526,6 +428,7 @@ void GameWindow::startGame()
 
 void GameWindow::handleGameOver(sf::RenderWindow &wnd)
 {
+	this->setStateMsgToGameState();
 	this->drawGameStateMsg(wnd);
 	this->handleRestart(wnd);
 }
@@ -535,15 +438,15 @@ void GameWindow::handleRestart(sf::RenderWindow &wnd)
 	this->drawRestartButton(wnd);
 	wnd.display();
 
-	this->restartOnEnd = Logic::EndGameState::restart;
+	this->logic.restartOnEnd = Logic::EndGameState::restart;
 	if(this->waitForButtonClick(this->restartButton, wnd))
-		this->restartOnEnd = Logic::EndGameState::norestart;
+		this->logic.restartOnEnd = Logic::EndGameState::norestart;
 }
 
 void GameWindow::startGameConsole()
 {
 	int x,y;
-	while(!this->isGameOver())
+	while(!this->logic.isGameOver())
 	{
 		// Get user console input
 		if(scanf("%i %i", &x, &y)!=2)
@@ -560,13 +463,13 @@ void GameWindow::startGameConsole()
 
 			if(this->board.buttonsToReveal == 0)
 			{
-				this->gameState = Logic::GameState::win; // WIN !
+				this->logic.gameState = Logic::GameState::win; // WIN !
 				this->gameStateMsg.setString("You win!");
 			}
 
 			if(this->board.get(x,y)->isMined())
 			{
-				this->gameState = Logic::GameState::lose; // lose
+				this->logic.gameState = Logic::GameState::lose; // lose
 				this->gameStateMsg.setString("You have lost!");
 				this->gameStateMsg.setFillColor({125,0,0});
 			}

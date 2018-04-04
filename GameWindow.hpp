@@ -19,24 +19,29 @@
 constexpr int restartButtonFontSize = 26;
 constexpr int gameStateMsgFontSize = 36;
 
+#ifdef __unix__
 constexpr const char * defaultFont 
 	= "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
+#else
+constexpr const char * defaultFont 
+	= "C:\\Windows\\Fonts\\arial.ttf";
+#endif
 
 class GameWindow
 {
 private:
+	// Handles game logic
+	Logic logic;
+	
+	// Represents board of buttons
 	Board board;
 
 	// Holds size of game window
 	int windowWidth;
 	int windowHeight;
 
-	// Filled with appropriate value by this->startGame
-	Logic::EndGameState restartOnEnd;
-
-	Logic::GameState gameState;
-
 	// Used for random play
+	// Randomly reveales buttons
 	std::default_random_engine randomGen;
 
 	// Holds path of directory that has assets
@@ -63,9 +68,6 @@ private:
 	// Randomly seletcs button to reveal
 	void randomPlay();
 
-	// Returns number of mines on board
-	int getMinesNumber() const;
-
 	// Loads needed textures from assets directory
 	// On success 0 is returned
 	// Otherwise number of unsuccessfully loaded textures
@@ -77,8 +79,8 @@ private:
 	// Non-zero otherwise
 	int loadFonts(const std::string &fontname);
 
-	// Negate flag state of given button
-	void flagButton(int xcoord, int ycoord);
+	// Sets stateMsg to appropriate value
+	void setStateMsgToGameState();
 
 	// Called when game is over to handle it
 	void handleGameOver(sf::RenderWindow &wnd);
@@ -137,9 +139,6 @@ public:
 	static constexpr float cellWidth = 35.0;
 	static constexpr float cellHeight = 35.0;
 
-	// Handles game logic
-	Logic logic;
-
 	// allocates memory for fields in 
 	// size of width*height*sizeof(Field)
 	GameWindow(int width, int height);
@@ -147,25 +146,10 @@ public:
 	// Deallocates mem for fields
 	~GameWindow();
 
-	// If random is set, fills board with randomly
-	// placed bombs in number of n.
-	// If random is not set fills top row,
-	// left and right diagonal with bom (n is ignored).
-	void deployMines(int n, bool random);
-
-	// Returns true if game is over
-	// False otherwise
-	bool isGameOver();
-
-	inline Logic::GameState getGameState();
-
 	// Randomly deploys mines and starts game
 	// Returns when game is over.
 	// Returns wheter game should be restarted or not
 	Logic::EndGameState initStartGame(int minesCount);
-
-	// Reveals button and checks if game is won or lost
-	void handleReveal(int x, int y);
 
 	void debug_display() const;
 	void display() const;
