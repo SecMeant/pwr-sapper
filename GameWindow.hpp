@@ -19,13 +19,8 @@
 constexpr int restartButtonFontSize = 26;
 constexpr int gameStateMsgFontSize = 36;
 
-#ifdef __unix__
 constexpr const char * defaultFont 
-	= "/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-M.ttf";
-#else
-constexpr const char * defaultFont 
-	= "C:\\Windows\\Fonts\\arial.ttf";
-#endif
+	= "./assets/font/IBMPlexMono-Regular.ttf";
 
 class GameWindow
 {
