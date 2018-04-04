@@ -380,6 +380,7 @@ void GameWindow::handleMouseEvent(const sf::Event &event)
 	if(event.mouseButton.y < this->boardScreenYoffset)
 		return;
 
+	// Calculates grid coordinates of button that has been pressed
 	int register xpressed =
 					(int) ((event.mouseButton.x - this->boardScreenXoffset) / this->cellWidth);
 
