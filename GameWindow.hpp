@@ -131,6 +131,8 @@ private:
 	(const sf::Text &btn, sf::RenderWindow &wnd);
 
 	void centerWindowPosition(sf::RenderWindow &wnd);
+
+	void handleMouseEvent(const sf::Event &event);
 public:
 	// Offset of main board 
 	// from top left corner of game window

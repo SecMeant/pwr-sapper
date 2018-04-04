@@ -334,6 +334,7 @@ size_t GameWindow::waitForButtonClick
 				}
 			}
 		}
+		wnd.display();
 	}
 	return SIZE_MAX;
 }
@@ -369,14 +370,39 @@ void GameWindow::centerWindowPosition(sf::RenderWindow &wnd)
 			{((int)dm.width-this->windowWidth)/2,((int)dm.height-this->windowHeight)/2});
 }
 
+void GameWindow::handleMouseEvent(const sf::Event &event)
+{
+	// Out of width bound click
+	if(event.mouseButton.x < this->boardScreenXoffset)
+		return;
+
+	// Out of height bound click
+	if(event.mouseButton.y < this->boardScreenYoffset)
+		return;
+
+	int register xpressed =
+					(int) ((event.mouseButton.x - this->boardScreenXoffset) / this->cellWidth);
+
+	int register ypressed =
+					(int) ((event.mouseButton.y - this->boardScreenYoffset) / this->cellHeight);
+
+	if (event.mouseButton.button == sf::Mouse::Left)
+	{
+		this->logic.handleReveal
+			(xpressed, ypressed, this->board);
+	}
+
+	else if(event.mouseButton.button == sf::Mouse::Right)
+	{
+		this->logic.flagButton(xpressed, ypressed, this->board);
+	}
+}
+
 void GameWindow::startGame()
 {
-	sf::RenderWindow 
-		window(
-				sf::VideoMode(this->windowWidth,this->windowHeight), 
-				"SFML Sapper",
-				sf::Style::Close
-				);
+	sf::RenderWindow window(
+		sf::VideoMode(this->windowWidth,this->windowHeight),
+		"SFML Sapper", sf::Style::Close);
 
 	this->centerWindowPosition(window);
 	window.clear();
@@ -400,30 +426,7 @@ void GameWindow::startGame()
 
 			if(event.type == sf::Event::MouseButtonPressed)
 			{
-				// Out of width bound click
-				if(event.mouseButton.x < this->boardScreenXoffset)
-					continue;
-
-				// Out of height bound click
-				if(event.mouseButton.y < this->boardScreenYoffset)
-					continue;
-
-				int register xpressed =
-								(int) ((event.mouseButton.x - this->boardScreenXoffset) / this->cellWidth);
-
-				int register ypressed =
-								(int) ((event.mouseButton.y - this->boardScreenYoffset) / this->cellHeight);
-
-				if (event.mouseButton.button == sf::Mouse::Left)
-				{
-					this->logic.handleReveal
-						(xpressed, ypressed, this->board);
-				}
-
-				else if(event.mouseButton.button == sf::Mouse::Right)
-				{
-					this->logic.flagButton(xpressed, ypressed, this->board);
-				}
+				this->handleMouseEvent(event);
 			}
 		}
 
@@ -439,14 +442,14 @@ void GameWindow::handleGameOver(sf::RenderWindow &wnd)
 {
 	this->setStateMsgToGameState();
 	this->drawGameStateMsg(wnd);
+	this->drawRestartButton(wnd);
+	wnd.display();
+
 	this->handleRestart(wnd);
 }
 
 void GameWindow::handleRestart(sf::RenderWindow &wnd)
 {
-	this->drawRestartButton(wnd);
-	wnd.display();
-
 	this->logic.restartOnEnd = Logic::EndGameState::restart;
 	if(this->waitForButtonClick(this->restartButton, wnd))
 		this->logic.restartOnEnd = Logic::EndGameState::norestart;
