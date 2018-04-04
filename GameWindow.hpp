@@ -21,7 +21,7 @@ constexpr int gameStateMsgFontSize = 36;
 
 #ifdef __unix__
 constexpr const char * defaultFont 
-	= "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
+	= "/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-M.ttf";
 #else
 constexpr const char * defaultFont 
 	= "C:\\Windows\\Fonts\\arial.ttf";
@@ -129,6 +129,8 @@ private:
 	// Other undefined value otherwise
 	size_t waitForButtonClick
 	(const sf::Text &btn, sf::RenderWindow &wnd);
+
+	void centerWindowPosition(sf::RenderWindow &wnd);
 public:
 	// Offset of main board 
 	// from top left corner of game window

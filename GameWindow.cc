@@ -17,7 +17,7 @@ GameWindow::GameWindow(int width, int height)
 		this->restartButton.setString("Restart");
 		this->restartButton.setFont(mainFont);
 		this->restartButton.setCharacterSize(restartButtonFontSize);
-		this->restartButton.setFillColor({255,0,255});
+		this->restartButton.setColor({255,0,255});
 		
 		int restartButtonWidth = this->restartButton.getGlobalBounds().width;
 		int restartButtonHeight = this->restartButton.getGlobalBounds().height;
@@ -31,7 +31,7 @@ GameWindow::GameWindow(int width, int height)
 		this->gameStateMsg.setString("asdf");
 		this->gameStateMsg.setFont(mainFont);
 		this->gameStateMsg.setCharacterSize(gameStateMsgFontSize);
-		this->gameStateMsg.setFillColor({0,255,0});
+		this->gameStateMsg.setColor({0,255,0});
 
 		int gameStateMsgWidth = this->gameStateMsg.getGlobalBounds().width;
 		register int xoffRB = (this->windowWidth-gameStateMsgWidth)/2;
@@ -145,7 +145,7 @@ void GameWindow::setStateMsgToGameState()
 	else if(this->logic.gameState == Logic::GameState::lose)
 	{
 		this->gameStateMsg.setString("You have lost!");
-		this->gameStateMsg.setFillColor({125,0,0});
+		this->gameStateMsg.setColor({125,0,0});
 	}
 	else
 		this->gameStateMsg.setString("Error: 0xD3ADB33F");
@@ -361,6 +361,14 @@ size_t GameWindow::waitForButtonClick
 	return SIZE_MAX; // window killed
 }
 
+void GameWindow::centerWindowPosition(sf::RenderWindow &wnd)
+{
+	auto dm = sf::VideoMode::getDesktopMode();
+	
+	wnd.setPosition(
+			{((int)dm.width-this->windowWidth)/2,((int)dm.height-this->windowHeight)/2});
+}
+
 void GameWindow::startGame()
 {
 	sf::RenderWindow 
@@ -370,6 +378,7 @@ void GameWindow::startGame()
 				sf::Style::Close
 				);
 
+	this->centerWindowPosition(window);
 	window.clear();
 
 	// Start the game loop
@@ -471,7 +480,7 @@ void GameWindow::startGameConsole()
 			{
 				this->logic.gameState = Logic::GameState::lose; // lose
 				this->gameStateMsg.setString("You have lost!");
-				this->gameStateMsg.setFillColor({125,0,0});
+				this->gameStateMsg.setColor({125,0,0});
 			}
 
 		}
