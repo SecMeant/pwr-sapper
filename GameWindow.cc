@@ -1,44 +1,22 @@
 #include <sstream>
 #include "GameWindow.hpp"
 
-GameWindow::GameWindow(int width, int height)
+#ifdef _WIN32
+#include "windows.h"
+#define setColor setFillColor
+#endif
+
+GameWindow::GameWindow()
 :logic(Logic::GameState::pending,Logic::EndGameState::norestart),
- board(width, height),
+ board(),
+ mainMenu(mainFont),
+ windowWidth(800),
+ windowHeight(600),
  randomGen(time(NULL)),
  assetsPath("./assets/")
 {
-	this->windowWidth = int(boardScreenXoffset*2 + width*cellWidth);
-	this->windowHeight = int(boardScreenYoffset*2 + height*cellHeight);
-
 	this->loadAssets();
 	this->loadFonts(defaultFont);
-
-	{ // deletes helper variables
-		this->restartButton.setString("Restart");
-		this->restartButton.setFont(mainFont);
-		this->restartButton.setCharacterSize(restartButtonFontSize);
-		this->restartButton.setColor({255,0,255});
-		
-		int restartButtonWidth = this->restartButton.getGlobalBounds().width;
-		int restartButtonHeight = this->restartButton.getGlobalBounds().height;
-		register int xoffRB = (this->windowWidth-restartButtonWidth)/2;
-		register int yoffRB = this->windowHeight-restartButtonHeight-30;
-		
-		this->restartButton.setPosition(xoffRB,yoffRB);
-	}
-
-	{ // ditto
-		this->gameStateMsg.setString("asdf");
-		this->gameStateMsg.setFont(mainFont);
-		this->gameStateMsg.setCharacterSize(gameStateMsgFontSize);
-		this->gameStateMsg.setColor({0,255,0});
-
-		int gameStateMsgWidth = this->gameStateMsg.getGlobalBounds().width;
-		register int xoffRB = (this->windowWidth-gameStateMsgWidth)/2;
-		register int yoffRB = 0;
-		
-		this->gameStateMsg.setPosition(xoffRB,yoffRB);
-	}
 }
 
 GameWindow::~GameWindow()
@@ -94,14 +72,32 @@ void GameWindow::display() const
 }
 
 Logic::EndGameState
-GameWindow::initStartGame(int minesCount)
+GameWindow::initStartGame()
 {
-	this->logic.deployMines(minesCount,true,this->board);
-	this->startGame();
+	sf::RenderWindow window(
+		sf::VideoMode(this->windowWidth,this->windowHeight),
+		"SFML Sapper", sf::Style::Close);
+	
+	Menu::Settings sets;
 
-	// True if game should be restarted after close
-	// False otherwise
-	// this->startGame sets appropriate value
+	do
+	{
+		this->logic.resetState();
+
+		// Returns settings for game that user choosed
+		sets = this->mainMenu.open(window);
+
+		this->board.reinitialize(sets.size.first, sets.size.second);
+		this->logic.deployMinesByDiffculty(sets.difficulty,this->board);
+
+		this->calculateWindowSize();
+		resizeWindow(window, this->windowWidth, this->windowHeight);
+		this->centerWindowPosition(window);
+		this->positionTexts();
+
+		this->startGame(window);
+	}while(this->logic.restartOnEnd == Logic::EndGameState::restart);
+
 	return this->logic.restartOnEnd;
 }
 
@@ -165,7 +161,11 @@ void GameWindow::randomPlay()
 		int x = int(this->randomGen() % this->board.width);
 		int y = int(this->randomGen() % this->board.height);
 
+#ifdef _WIN32
+		Sleep(100);
+#else
 		sleep(1);
+#endif
 		
 		this->logic.handleReveal(x,y,this->board);
 	}
@@ -365,7 +365,7 @@ size_t GameWindow::waitForButtonClick
 void GameWindow::centerWindowPosition(sf::RenderWindow &wnd)
 {
 	auto dm = sf::VideoMode::getDesktopMode();
-	
+
 	wnd.setPosition(
 			{((int)dm.width-this->windowWidth)/2,((int)dm.height-this->windowHeight)/2});
 }
@@ -399,15 +399,8 @@ void GameWindow::handleMouseEvent(const sf::Event &event)
 	}
 }
 
-void GameWindow::startGame()
+void GameWindow::startGame(sf::RenderWindow &window)
 {
-	sf::RenderWindow window(
-		sf::VideoMode(this->windowWidth,this->windowHeight),
-		"SFML Sapper", sf::Style::Close);
-
-	this->centerWindowPosition(window);
-	window.clear();
-
 	// Start the game loop
 	while (window.isOpen())
 	{
@@ -430,6 +423,8 @@ void GameWindow::startGame()
 				this->handleMouseEvent(event);
 			}
 		}
+
+		window.clear();
 
 		// Draws main grid of board
 		this->drawBoard(window);
@@ -454,6 +449,38 @@ void GameWindow::handleRestart(sf::RenderWindow &wnd)
 	this->logic.restartOnEnd = Logic::EndGameState::restart;
 	if(this->waitForButtonClick(this->restartButton, wnd))
 		this->logic.restartOnEnd = Logic::EndGameState::norestart;
+}
+
+void GameWindow::calculateWindowSize()
+{
+	this->windowWidth = int(boardScreenXoffset*2 + this->board.width*cellWidth);
+	this->windowHeight = int(boardScreenYoffset*2 + this->board.height*cellHeight);
+}
+
+void GameWindow::positionTexts()
+{
+	this->restartButton.setString("Restart");
+	this->restartButton.setFont(mainFont);
+	this->restartButton.setCharacterSize(restartButtonFontSize);
+	this->restartButton.setColor({255,0,255});
+	
+	int restartButtonWidth = this->restartButton.getGlobalBounds().width;
+	int restartButtonHeight = this->restartButton.getGlobalBounds().height;
+	register int xoffRB = (this->windowWidth-restartButtonWidth)/2;
+	register int yoffRB = this->windowHeight-restartButtonHeight-30;
+	
+	this->restartButton.setPosition(xoffRB,yoffRB);
+
+	this->gameStateMsg.setString("asdf");
+	this->gameStateMsg.setFont(mainFont);
+	this->gameStateMsg.setCharacterSize(gameStateMsgFontSize);
+	this->gameStateMsg.setColor({0,255,0});
+
+	int gameStateMsgWidth = this->gameStateMsg.getGlobalBounds().width;
+	xoffRB = (this->windowWidth-gameStateMsgWidth)/2;
+	yoffRB = 0;
+	
+	this->gameStateMsg.setPosition(xoffRB,yoffRB);
 }
 
 void GameWindow::startGameConsole()

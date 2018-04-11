@@ -1,10 +1,10 @@
 cflags=-std=c++11
 warningson=-Wall -Wextra
 sfmlso=-lsfml-graphics -lsfml-window -lsfml-system
-sfmldll=sfml-graphics-2.dll sfml-graphics-d-2.dll sfml-window-2.dll sfml-window-d-2.dll sfml-system-2.dll sfml-system-d-2.dll
+sfmldll=sfml-graphics-d-2.dll sfml-window-d-2.dll sfml-system-d-2.dll
 sfmllib=-I C:\SFML\include -I C:\SFML\lib
 solibs=-lpthread
-src=main.cc Field.cc GameWindow.cc Board.cc Logic.cc
+src=main.cc Field.cc GameWindow.cc Board.cc Logic.cc Menu.cc tools.cc
 appname=game
 
 all linux:

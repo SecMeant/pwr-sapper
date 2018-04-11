@@ -3,7 +3,9 @@
 
 #include "Board.hpp"
 #include "Logic.hpp"
+#include "Menu.hpp"
 
+#include "tools.hpp"
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
@@ -30,6 +32,7 @@ private:
 	
 	// Represents board of buttons
 	Board board;
+	Menu mainMenu;
 
 	// Holds size of game window
 	int windowWidth;
@@ -55,7 +58,7 @@ private:
 	sf::Text gameStateMsg;
 
 	// Starts game
-	void startGame();
+	void startGame(sf::RenderWindow &window);
 
 	// Starts game in console
 	void startGameConsole();
@@ -83,6 +86,14 @@ private:
 	// Waits for user to click on yes/no when asked 
 	// for restart
 	void handleRestart(sf::RenderWindow &wnd);
+
+	// positioning button for restarting and one that
+	// says wheter user won or not
+	void positionTexts();
+
+	// puts into this->windowWidth and this->windowHeight new vals
+	// based on board with and height
+	void calculateWindowSize();
 
 	/* SFML HELPER FUNCTIONS */
 	// Draws grid of game board
@@ -135,12 +146,12 @@ public:
 	static constexpr float boardScreenYoffset = 75.0;
 
 	// Size of cells
-	static constexpr float cellWidth = 35.0;
-	static constexpr float cellHeight = 35.0;
+	static constexpr float cellWidth = 25.0;
+	static constexpr float cellHeight = 25.0;
 
 	// allocates memory for fields in 
 	// size of width*height*sizeof(Field)
-	GameWindow(int width, int height);
+	GameWindow();
 
 	// Deallocates mem for fields
 	~GameWindow();
@@ -148,7 +159,7 @@ public:
 	// Randomly deploys mines and starts game
 	// Returns when game is over.
 	// Returns wheter game should be restarted or not
-	Logic::EndGameState initStartGame(int minesCount);
+	Logic::EndGameState initStartGame();
 
 	void debug_display() const;
 	void display() const;

@@ -75,6 +75,28 @@ void Logic::deployMines(int n, bool random, Board &board)
 	printf("%i",board.buttonsToReveal);
 }
 
+void Logic::deployMinesByDiffculty(Menu::Difficulty diff, Board &board)
+{
+	int minesCount;
+	int boardSize = board.width * board.height;
+
+	switch(diff)
+	{
+		case Menu::Difficulty::Easy:
+			minesCount = 0.2*boardSize;
+			this->deployMines(minesCount, 1, board);
+			break;
+		case Menu::Difficulty::Normal:
+			minesCount = 0.4*boardSize;
+			this->deployMines(minesCount, 1, board);
+			break;
+		case Menu::Difficulty::Hard:
+			minesCount = 0.7*boardSize;
+			this->deployMines(minesCount, 1, board);
+			break;
+	}
+}
+
 void Logic::handleReveal(int x, int y, Board &board)
 {
 	if(board.revealUnflagged(x,y))
@@ -104,3 +126,8 @@ void Logic::flagButton(int xcoord, int ycoord, Board &board)
 	f->setFlagState(!f->isFlagged());
 }
 
+void Logic::resetState()
+{
+	this->gameState=GameState::pending;
+	this->restartOnEnd=EndGameState::norestart;
+}

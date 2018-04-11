@@ -2,6 +2,7 @@
 #define LOGIC_H
 
 #include "Board.hpp"
+#include "Menu.hpp"
 #include <time.h>
 #include <random>
 
@@ -38,11 +39,17 @@ public:
 	// left and right diagonal with bom (n is ignored).
 	void deployMines(int n, bool random, Board &board);
 
+	// Deploys mines according to game difficulty
+	void deployMinesByDiffculty(Menu::Difficulty diff, Board &board);
+
 	// Reveals button and checks if game is won or lost
 	void handleReveal(int x, int y, Board &board);
 
 	// Negate flag state of given button
 	static void flagButton(int xcoord, int ycoord, Board &board);
+
+	// Sets logic to initial state
+	void resetState();
 };
 
 #endif

@@ -11,7 +11,11 @@ private:
 
 public:
 	Board(int width, int height);
+	Board(){this->board = nullptr;}
 	~Board();
+
+	// Reinitializes itself with new with and height
+	void reinitialize(int w, int h);
 
 	// Desribes span of mem that contains fields
 	int width;

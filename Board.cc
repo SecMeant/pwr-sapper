@@ -25,6 +25,28 @@ Board::~Board()
 	delete [] this->board;
 }
 
+void Board::reinitialize(int w, int h)
+{
+	delete [] this->board;
+
+	if(w <= 0)
+	{
+		w = 1;
+		puts("Board's width cannot be 0 or less!\n");
+	}
+
+	if(h <= 0)
+	{
+		h = 1;
+		puts("Board's height cannot be 0 or less!\n");
+	}
+
+	this->width = w;
+	this->height = h;
+
+	this->board = new Field[w * h]();
+}
+
 Field * Board::get(int x, int y) const
 {
 	if(x >= this->width || x < 0)
