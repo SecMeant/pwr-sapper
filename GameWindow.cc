@@ -1,11 +1,6 @@
 #include <sstream>
 #include "GameWindow.hpp"
 
-#ifdef _WIN32
-#include "windows.h"
-#define setColor setFillColor
-#endif
-
 GameWindow::GameWindow()
 :logic(Logic::GameState::pending,Logic::EndGameState::norestart),
  board(),
@@ -141,7 +136,7 @@ void GameWindow::setStateMsgToGameState()
 	else if(this->logic.gameState == Logic::GameState::lose)
 	{
 		this->gameStateMsg.setString("You have lost!");
-		this->gameStateMsg.setColor({125,0,0});
+		this->gameStateMsg.setFillColor({125,0,0});
 	}
 	else
 		this->gameStateMsg.setString("Error: 0xD3ADB33F");
@@ -161,6 +156,7 @@ void GameWindow::randomPlay()
 		int x = int(this->randomGen() % this->board.width);
 		int y = int(this->randomGen() % this->board.height);
 
+// Yeah i know ...
 #ifdef _WIN32
 		Sleep(100);
 #else
@@ -462,7 +458,7 @@ void GameWindow::positionTexts()
 	this->restartButton.setString("Restart");
 	this->restartButton.setFont(mainFont);
 	this->restartButton.setCharacterSize(restartButtonFontSize);
-	this->restartButton.setColor({255,0,255});
+	this->restartButton.setFillColor({255,0,255});
 	
 	int restartButtonWidth = this->restartButton.getGlobalBounds().width;
 	int restartButtonHeight = this->restartButton.getGlobalBounds().height;
@@ -474,7 +470,7 @@ void GameWindow::positionTexts()
 	this->gameStateMsg.setString("asdf");
 	this->gameStateMsg.setFont(mainFont);
 	this->gameStateMsg.setCharacterSize(gameStateMsgFontSize);
-	this->gameStateMsg.setColor({0,255,0});
+	this->gameStateMsg.setFillColor({0,255,0});
 
 	int gameStateMsgWidth = this->gameStateMsg.getGlobalBounds().width;
 	xoffRB = (this->windowWidth-gameStateMsgWidth)/2;
@@ -511,7 +507,7 @@ void GameWindow::startGameConsole()
 			{
 				this->logic.gameState = Logic::GameState::lose; // lose
 				this->gameStateMsg.setString("You have lost!");
-				this->gameStateMsg.setColor({125,0,0});
+				this->gameStateMsg.setFillColor({125,0,0});
 			}
 
 		}
